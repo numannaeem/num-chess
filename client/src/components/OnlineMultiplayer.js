@@ -10,10 +10,23 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Stack,
+  Typography
 } from '@mui/material'
+import { useLocation } from 'react-router-dom'
 import GameOverModal from './GameOverModal'
 
-function LocalMultiplayer () {
+function OnlineMultiplayer ({ socket }) {
+  const location = useLocation()
+
+  const [white, setWhite] = useState({
+    username: location.state.white?.username,
+    id: location.state.white?.id
+  })
+  const [black, setBlack] = useState({
+    username: location.state.black?.username,
+    id: location.state.black?.id
+  })
   const [fen, setFen] = useState('start')
   const [gameHistory, setGameHistory] = useState([])
   const [alertOpen, setAlertOpen] = useState(false)
@@ -23,14 +36,47 @@ function LocalMultiplayer () {
   // gameWinner = 'd' for draw, 'w' for white wins, 'b' for black wins
   const [gameWinner, setGameWinner] = useState(null)
   const [overModalOpen, setOverModalOpen] = useState(false)
+  const [yourTurn, setYourTurn] = useState(
+    location.state.white?.id === socket?.id
+    // location.state.white contains the data of white player, sent over from WaitingRoom
+  )
 
   const game = useRef(null)
+
+  useEffect(() => {
+    socket?.on('next-turn', data => {
+      const move = game.current.move(data.move)
+      setFen(game.current.fen())
+      if (game.current.in_check()) {
+        const kingPosition = getPiecePosition({
+          type: 'k',
+          color: move.color === 'w' ? 'b' : 'w'
+        })
+        setSquareStyles({
+          [kingPosition]: {
+            backgroundColor: 'rgba(24,255,186,0.6)'
+          }
+        })
+      } else {
+        setSquareStyles({})
+      }
+      if (data.nextPlayer.id === socket.id) {
+        setYourTurn(true)
+      }
+    })
+  }, [socket])
+
+  useEffect(() => {
+    if (!game.current) {
+      game.current = new Chess()
+    }
+  }, [])
 
   const restartGame = () => {
     setGameHistory([])
     setGameOver(false)
     game.current.reset()
-    setSquareStyles([])
+    setSquareStyles({})
     setFen(game.current.fen())
     setAlertOpen(false)
   }
@@ -48,16 +94,19 @@ function LocalMultiplayer () {
         }
       })
       setGameWinner(move.color)
+      return move.color
     } else if (game.current.in_stalemate()) {
       // TODO: handle stalemate
       setGameWinner('d')
+      return 'd'
       // setTimeout(() => alert('STALEMATE'), 300)
     } else {
       // TODO: handle draw by insufficient material/50-move rule/threefold repetition
       setGameWinner('d')
+      return 'd'
       // setTimeout(() => alert('DRAW'), 300)
     }
-    setOverModalOpen(true)
+    // setOverModalOpen(true)
   }
 
   const getPiecePosition = piece => {
@@ -77,13 +126,8 @@ function LocalMultiplayer () {
       })
   }
 
-  useEffect(() => {
-    if (!game.current) {
-      game.current = new Chess()
-    }
-  }, [])
-
   const onDrop = ({ sourceSquare, targetSquare }) => {
+    let gameWinner = null
     // see if the move is legal
     const move = game.current.move({
       from: sourceSquare,
@@ -97,10 +141,14 @@ function LocalMultiplayer () {
     setFen(game.current.fen())
 
     if (game.current.game_over()) {
-      finishGame(move)
-      return
+      gameWinner = finishGame(move)
     }
-
+    socket.emit('played', game.current.fen(), gameWinner, {
+      from: sourceSquare,
+      to: targetSquare,
+      promotion: 'q' // always promote to a queen
+    })
+    setYourTurn(false)
     if (game.current.in_check()) {
       const kingPosition = getPiecePosition({
         type: 'k',
@@ -118,6 +166,7 @@ function LocalMultiplayer () {
 
   const onSquareClick = square => {
     if (!gameOver) {
+      let gameWinner = null
       setPieceSquare(square)
       const validMoves = game.current.moves({ square, verbose: true })
 
@@ -151,9 +200,16 @@ function LocalMultiplayer () {
       setPieceSquare('')
 
       if (game.current.game_over()) {
-        finishGame(move)
-        return
+        gameWinner = finishGame(move)
       }
+
+      socket.emit('played', game.current.fen(), gameWinner, {
+        from: pieceSquare,
+        to: square,
+        promotion: 'q' // always promote to a queen
+      })
+
+      setYourTurn(false)
 
       if (game.current.in_check()) {
         const kingPosition = getPiecePosition({
@@ -177,66 +233,103 @@ function LocalMultiplayer () {
         onClose={() => setOverModalOpen(false)}
         restartGame={restartGame}
       />
-      <Box
+      <Stack
         height='100vh'
         bgcolor='background.paper'
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '1rem',
-          minHeight: '100vh',
-          flexDirection: 'column'
-        }}
+        justifyContent='space-around'
+        alignItems='center'
       >
-        <Chessboard
-          undo
-          calcWidth={({ screenWidth, screenHeight }) =>
-            screenHeight < screenWidth ? 0.8 * screenHeight : 0.95 * screenWidth}
-          position={fen}
-          transitionDuration={50}
-          draggable={!gameOver}
-          onDrop={onDrop}
-          boardStyle={{
-            borderRadius: '4px',
-            overflow: 'hidden',
-            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
-            marginBottom: '1rem',
-            backgroundColor: 'transparent'
-          }}
-          squareStyles={squareStyles}
-          onSquareClick={onSquareClick}
-          darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
-          lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
-        />
-
-        <ButtonGroup>
-          {!gameOver && (
-            <Button
-              sx={{ marginRight: '2px' }}
-              disabled={gameHistory.length === 0}
-              variant='contained'
-              color='primary'
-              onClick={() => {
-                game.current.undo()
-                setSquareStyles([])
-                setGameHistory(game.current.history({ verbose: true }))
-                setFen(game.current.fen())
-              }}
-            >
-              undo move
-            </Button>
-          )}
-          <Button
-            sx={{ marginLeft: '2px' }}
-            disabled={gameHistory.length === 0}
-            color='secondary'
-            variant='contained'
-            onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
+        <Stack
+          px={{ xs: 1, md: 5 }}
+          height='fill-available'
+          width='fill-available'
+          direction={{ xs: 'column', md: 'row' }}
+          alignItems='center'
+          justifyContent='space-evenly'
+        >
+          <Typography
+            fontWeight='800'
+            flexGrow={{ xs: 0, md: 1 }}
+            flexBasis={0}
+            fontSize={{ xs: '1.5rem', md: '4rem' }}
+            textAlign='center'
+            color='text.primary'
           >
-            restart game
-          </Button>
-        </ButtonGroup>
+            {black.username || 'Black'}
+          </Typography>
+          <Chessboard
+            orientation={black.id === socket.id ? 'black' : 'white'}
+            undo
+            calcWidth={({ screenWidth, screenHeight }) =>
+              screenHeight < screenWidth
+                ? 0.75 * screenHeight
+                : 0.85 * screenWidth}
+            position={fen}
+            transitionDuration={50}
+            draggable={yourTurn && !gameOver}
+            onDrop={onDrop}
+            boardStyle={{
+              borderRadius: '4px',
+              overflow: 'hidden',
+              boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+              backgroundColor: 'transparent'
+            }}
+            squareStyles={squareStyles}
+            onSquareClick={yourTurn ? onSquareClick : () => {}}
+            darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
+            lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
+          />
+          <Typography
+            position='relative'
+            fontWeight='800'
+            flexGrow={{ xs: 0, md: 1 }}
+            flexBasis={0}
+            fontSize={{ xs: '1.5rem', md: '4rem' }}
+            textAlign='center'
+            color='text.primary'
+            // sx={{
+            // 	'&::after': {
+            // 		mixBlendMode: 'difference',
+            // 		backgroundImage: 'url(white-pawn.png)',
+            // 		backgroundBlendMode: 'lighten',
+            // 		backgroundPosition:'center',
+            // 	}
+            // }}
+          >
+            {white.username || 'White'}
+            {/* <img className='pawn-img' src='./white-pawn.png' /> */}
+          </Typography>
+        </Stack>
+
+        <Box py={2}>
+          <ButtonGroup>
+            {!gameOver && (
+              <Button
+                sx={{ marginRight: '2px' }}
+                disabled={gameHistory.length === 0}
+                variant='contained'
+                color='primary'
+                onClick={() => {
+                  game.current.undo()
+                  setSquareStyles({})
+                  setGameHistory(game.current.history({ verbose: true }))
+                  setFen(game.current.fen())
+                }}
+              >
+                offer draw
+              </Button>
+            )}
+            <Button
+              sx={{ marginLeft: '2px' }}
+              disabled={gameHistory.length === 0}
+              color='secondary'
+              variant='contained'
+              onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
+            >
+              resign
+            </Button>
+          </ButtonGroup>
+        </Box>
         <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
           <DialogTitle>Restart the game?</DialogTitle>
           <DialogContent>
@@ -263,9 +356,9 @@ function LocalMultiplayer () {
 							<Typography color={'secondary.light'}>{g.san}</Typography>
 						))}
 					</Box> */}
-      </Box>
+      </Stack>
     </>
   )
 }
 
-export default LocalMultiplayer
+export default OnlineMultiplayer

@@ -14,10 +14,8 @@ import {
   Slide,
   TextField,
   Typography,
-  Zoom
 } from '@mui/material'
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
-import { grey, purple } from '@mui/material/colors'
 
 function HomeComponent ({ toast }) {
   const [roomName, setRoomName] = useState('')
@@ -27,7 +25,6 @@ function HomeComponent ({ toast }) {
   // const [error, setError] = useState(false)
   const hoverStyles = text => {
     return {
-      transition: 'all 200ms',
       flexGrow: 0,
       width: '100%',
       '&:hover': {
@@ -50,7 +47,11 @@ function HomeComponent ({ toast }) {
       //   setError(true)
       // }
       // setInputLoading(false)
-      navigate('online-multiplayer')
+      navigate('room', {
+        state: {
+          roomName
+        }
+      })
     }
   }
   const handleLocalGame = () => {
@@ -74,7 +75,7 @@ function HomeComponent ({ toast }) {
             </Typography>
           </Box>
         </Fade>
-        <Grow in={entered >= 1} onEntered={() => setEntered(2)} timeout={500}>
+        <Grow in={entered >= 1} onEntered={() => setEntered(2)} timeout={400}>
           <Stack spacing={1} alignItems='center'>
             <Button
               color='primary'
@@ -115,6 +116,7 @@ function HomeComponent ({ toast }) {
             <Divider />
             <Button
               // disabled={roomName.length === 0}
+              onClick={() => navigate('room')}
               color='secondary'
               type='submit'
               variant='outlined'
