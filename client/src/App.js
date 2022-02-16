@@ -27,7 +27,7 @@ const theme = createTheme({
     // }
   },
   typography: {
-    fontFamily: 'monospace'
+    fontFamily: 'JetBrains Mono, monospace'
   }
 })
 
@@ -61,7 +61,7 @@ function App () {
           <Route path='/' element={<HomeComponent toast={toast} />} />
           <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
           <Route path='/room' element={<WaitingRoom socket={socket} />} />
-          <Route path='/online-multiplayer' element={<OnlineMultiplayer socket={socket} />} />
+          {socket && <Route path='/online-multiplayer' element={<OnlineMultiplayer username={username} socket={socket} />} />}
         </Routes>
         <ToastContainer />
       </BrowserRouter>

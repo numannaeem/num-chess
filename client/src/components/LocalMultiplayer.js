@@ -9,7 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
+  DialogTitle
 } from '@mui/material'
 import GameOverModal from './GameOverModal'
 
@@ -47,14 +47,14 @@ function LocalMultiplayer () {
           backgroundColor: '#f02e32'
         }
       })
-      setGameWinner(move.color)
+      setGameWinner(move.color === 'b' ? 'black' : 'white')
     } else if (game.current.in_stalemate()) {
       // TODO: handle stalemate
-      setGameWinner('d')
+      setGameWinner('draw')
       // setTimeout(() => alert('STALEMATE'), 300)
     } else {
       // TODO: handle draw by insufficient material/50-move rule/threefold repetition
-      setGameWinner('d')
+      setGameWinner('draw')
       // setTimeout(() => alert('DRAW'), 300)
     }
     setOverModalOpen(true)

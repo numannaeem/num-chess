@@ -12,8 +12,12 @@ function NameScreen ({ setOuterUsername, toast }) {
   const [username, setUsername] = useState('')
   const [error, setError] = useState(null)
   const handleSubmit = () => {
-    if (username.length <= 2) {
+    if (username.length < 3) {
       setError('Minimum 3 characters required')
+      return
+    }
+    if (username.length > 10) {
+      setError('Maximum 10 characters allowed')
       return
     }
     if (!username.match(/^[0-9a-zA-Z_]+$/)) {
@@ -23,13 +27,13 @@ function NameScreen ({ setOuterUsername, toast }) {
     setOuterUsername(username)
     localStorage.setItem('username', username)
     toast.success('Username set!', {
-      position: 'bottom-left',
-      autoClose: 1000,
+      position: 'top-right',
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: false,
       draggable: true,
-      theme: 'colored'
+      theme: 'dark'
     })
   }
   return (

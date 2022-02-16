@@ -4,12 +4,16 @@
   "description": "Online multiplayer chess using WebSockets",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"cd client && npm start\" \"nodemon index\" "
   },
   "author": "Numan Naeem",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.2",
     "socket.io": "^4.4.1"
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0"  
   }
 }

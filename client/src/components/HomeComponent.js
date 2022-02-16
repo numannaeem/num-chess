@@ -13,7 +13,7 @@ import {
   Link,
   Slide,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material'
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
 
@@ -67,7 +67,7 @@ function HomeComponent ({ toast }) {
       >
         <Fade onEntered={() => setEntered(1)} in timeout={500}>
           <Box flexBasis='100%' mt={10} textAlign='center'>
-            <Typography variant='h2' color='primary'>
+            <Typography variant='h2' fontWeight={600} color='primary'>
               NumChess♙
             </Typography>
             <Typography mt={2} variant='subtitle1' color='text.secondary'>
@@ -141,9 +141,9 @@ function HomeComponent ({ toast }) {
             py={2}
             px={3}
             borderRadius='1rem 1rem 0 0'
-            bgcolor='rgba(255, 255, 255, 0.1)'
+            bgcolor='rgba(155, 155, 155, 0.2)'
           >
-            <Typography color='lightgray' fontWeight='bold'>
+            <Typography color='text.primary' fontWeight='600'>
               made by{' '}
               <Link
                 target='_blank'
@@ -155,7 +155,7 @@ function HomeComponent ({ toast }) {
                 color='inherit'
                 href='https://www.github.com/numannaeem' rel='noreferrer'
               >
-                Numan Naeem<span class='wave'>&nbsp;👋</span>
+                Numan Naeem<span className='wave'>&nbsp;👋</span>
               </Link>
             </Typography>
           </Box>
