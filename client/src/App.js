@@ -11,6 +11,7 @@ import WaitingRoom from './components/WaitingRoom'
 import { io } from 'socket.io-client'
 import baseUrl from './baseUrl'
 import OnlineMultiplayer from './components/OnlineMultiplayer'
+import { Typography, Box } from '@mui/material'
 
 const theme = createTheme({
   palette: {
@@ -58,7 +59,7 @@ function App () {
     <ThemeProvider theme={theme}>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<HomeComponent toast={toast} />} />
+          <Route path='/' element={<HomeComponent toast={toast} socket={socket} />} />
           <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
           <Route path='/room' element={<WaitingRoom socket={socket} />} />
           {socket && <Route path='/online-multiplayer' element={<OnlineMultiplayer username={username} socket={socket} />} />}

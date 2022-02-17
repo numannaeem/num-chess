@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
 import Box from '@mui/material/Box'
@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
 
-function HomeComponent ({ toast }) {
+function HomeComponent ({ toast, socket }) {
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
   // const [innerUserName, setInnerUserName] = useState('')
@@ -57,6 +57,34 @@ function HomeComponent ({ toast }) {
   const handleLocalGame = () => {
     navigate('local-multiplayer')
   }
+
+  useEffect(() => {
+    socket?.on('error-occurred', err => {
+      toast.error(<ErrorToast />, {
+        position: 'top-right',
+        autoClose: false,
+        hideProgressBar: true,
+        closeOnClick: true,
+        draggable: true,
+        theme:'colored',
+        onClick: () => {
+          navigate('/')
+        }
+      })
+    })
+  }, [socket, toast, navigate])
+
+  const ErrorToast = ({ closeToast, toastProps }) => {
+    return (
+      <Box>
+        <Typography fontWeight={'bolder'}>Something went wrong!</Typography>
+        <Typography fontSize='80%'>
+          Click here to return to menu and start a new game :/
+        </Typography>
+      </Box>
+    )
+  }
+
   return (
     <Box height='100vh' overflow='hidden' px={3} bgcolor='background.paper'>
       <Stack
@@ -96,7 +124,12 @@ function HomeComponent ({ toast }) {
               value={roomName}
               autoComplete='off'
               onChange={e => {
-                if (e.target.value.match(/^[0-9a-zA-Z]*$/) && e.target.value.length <= 6) { setRoomName(e.target.value.toUpperCase()) }
+                if (
+                  e.target.value.match(/^[0-9a-zA-Z]*$/) &&
+                  e.target.value.length <= 6
+                ) {
+                  setRoomName(e.target.value.toUpperCase())
+                }
               }}
               InputProps={{
                 endAdornment: (
@@ -153,7 +186,8 @@ function HomeComponent ({ toast }) {
                   }
                 }}
                 color='inherit'
-                href='https://www.github.com/numannaeem' rel='noreferrer'
+                href='https://www.github.com/numannaeem'
+                rel='noreferrer'
               >
                 Numan Naeem<span className='wave'>&nbsp;👋</span>
               </Link>

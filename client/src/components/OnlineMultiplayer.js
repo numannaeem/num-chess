@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Chessboard from 'chessboardjsx'
 import Chess from 'chess.js'
 import {
@@ -46,11 +46,50 @@ function OnlineMultiplayer ({ socket, username }) {
     // location.state.white contains the data of white player, sent over from WaitingRoom
   )
 
+  const finishGame = useCallback(
+    move => {
+      setGameOver(true)
+      setOverModalOpen(true)
+      if (move) {
+        if (game.current.in_checkmate()) {
+          const kingPosition = getPiecePosition({
+            type: 'k',
+            color: move.color === 'w' ? 'b' : 'w'
+          })
+          setSquareStyles({
+            [kingPosition]: {
+              backgroundColor: '#f02e32'
+            }
+          })
+          setSubtitleText(
+            `${move.color === 'w' ? 'White' : 'Black'} won by checkmate`
+          )
+          game.current.reset()
+          return username
+        } else if (game.current.in_stalemate()) {
+          setSubtitleText('Draw by stalemate')
+        } else if (game.current.insufficient_material()) {
+          setSubtitleText('Draw by insuffiicient material')
+        } else if (game.current.in_threefold_repetition()) {
+          setSubtitleText('Draw by threefold repetition')
+        }
+      }
+      game.current.reset()
+      return 'draw'
+    },
+    [username]
+  )
+
   useEffect(() => {
-    if (!location.state || (location.state.white.id !== socket.id && location.state.black.id !== socket.id)) {
+    if (!location.state) {
       navigate('/')
+    } else if (
+      location.state.white.id !== socket.id &&
+      location.state.black.id !== socket.id
+    ) {
+      socket.emit('reconnect-to-room', location.state.roomName)
     }
-  }, [location])
+  }, [location, navigate, socket])
 
   const game = useRef(null)
 
@@ -58,18 +97,21 @@ function OnlineMultiplayer ({ socket, username }) {
     socket?.on('next-turn', data => {
       const move = game.current.move(data.move)
       setFen(game.current.fen())
-      if (game.current.in_check()) {
-        const kingPosition = getPiecePosition({
-          type: 'k',
-          color: move.color === 'w' ? 'b' : 'w'
-        })
-        setSquareStyles({
-          [kingPosition]: {
-            backgroundColor: 'rgba(24,255,186,0.6)'
-          }
-        })
-      } else {
-        setSquareStyles({})
+      if (move) {
+        if (game.current.in_check()) {
+          console.log(move)
+          const kingPosition = getPiecePosition({
+            type: 'k',
+            color: move.color === 'w' ? 'b' : 'w'
+          })
+          setSquareStyles({
+            [kingPosition]: {
+              backgroundColor: 'rgba(24,255,186,0.6)'
+            }
+          })
+        } else {
+          setSquareStyles({})
+        }
       }
       if (data.nextPlayer.id === socket.id) {
         setYourTurn(true)
@@ -81,10 +123,11 @@ function OnlineMultiplayer ({ socket, username }) {
       setFen(game.current.fen())
       finishGame(move)
       setGameWinner(data.winner)
+      console.log(game.current.fen())
       // setSubtitleText(`${data.winner} won by checkmate`)
     })
 
-    socket.on('player-left', (loserUsername) => {
+    socket.on('player-left', loserUsername => {
       setGameWinner(username)
       setSubtitleText(`${loserUsername} lost connection`)
       finishGame()
@@ -100,11 +143,21 @@ function OnlineMultiplayer ({ socket, username }) {
     })
     socket.on('opponent-resigned', () => {
       setGameWinner(username)
-      setSubtitleText(`${white.id === socket.id ? 'White' : 'Black'} won by resignation`)
+      setSubtitleText(
+        `${white.id === socket.id ? 'White' : 'Black'} won by resignation`
+      )
       finishGame()
     })
-  }, [socket])
+    socket.on('update-data', data => {
+      setYourTurn(data.currentPlayer.id === socket.id)
+      game.current.load(data.fen)
+      setFen(game.current.fen())
+      setWhite(data.players.find(p => (p.color === 'white')))
+      setBlack(data.players.find(p => (p.color === 'black')))
+    })
+  }, [socket, username, finishGame, white])
 
+  //initial game.current useEffect
   useEffect(() => {
     if (!game.current) {
       game.current = new Chess()
@@ -119,36 +172,6 @@ function OnlineMultiplayer ({ socket, username }) {
     setFen(game.current.fen())
     setAlertOpen(false)
   }
-
-  const finishGame = move => {
-    setGameOver(true)
-    setOverModalOpen(true)
-    if (move) {
-      if (game.current.in_checkmate()) {
-        const kingPosition = getPiecePosition({
-          type: 'k',
-          color: move.color === 'w' ? 'b' : 'w'
-        })
-        setSquareStyles({
-          [kingPosition]: {
-            backgroundColor: '#f02e32'
-          }
-        })
-        setSubtitleText(`${move.color === 'w' ? 'White' : 'Black'} won by checkmate`)
-        game.current.reset()
-        return username
-      } else if (game.current.in_stalemate()) {
-        setSubtitleText('Draw by stalemate')
-      } else if (game.current.insufficient_material()) {
-        setSubtitleText('Draw by insuffiicient material')
-      } else if (game.current.in_threefold_repetition()) {
-        setSubtitleText('Draw by threefold repetition')
-      }
-    }
-    game.current.reset()
-    return 'draw'
-  }
-
   const getPiecePosition = piece => {
     return []
       .concat(...game.current.board())
@@ -165,7 +188,6 @@ function OnlineMultiplayer ({ socket, username }) {
         return row + column
       })
   }
-
   const onDrop = ({ sourceSquare, targetSquare }) => {
     let gameWinner = null
     // see if the move is legal
@@ -204,7 +226,6 @@ function OnlineMultiplayer ({ socket, username }) {
       setSquareStyles({})
     }
   }
-
   const onSquareClick = square => {
     if (!gameOver) {
       let gameWinner = null
@@ -266,11 +287,9 @@ function OnlineMultiplayer ({ socket, username }) {
       }
     }
   }
-
   const offerDraw = () => {
     socket.emit('offer-draw', white.id === socket.id ? black.id : white.id)
   }
-
   const handleAcceptDraw = () => {
     socket.emit('accept-draw', white.id === socket.id ? black.id : white.id)
     setGameWinner('draw')
@@ -282,7 +301,9 @@ function OnlineMultiplayer ({ socket, username }) {
     setAlertOpen(false)
     socket.emit('resign', white.id === socket.id ? black.id : white.id)
     setGameWinner(white.id === socket.id ? black.username : white.username)
-    setSubtitleText(`${white.id === socket.id ? 'Black' : 'White'} won by resignation`)
+    setSubtitleText(
+      `${white.id === socket.id ? 'Black' : 'White'} won by resignation`
+    )
     finishGame()
   }
 
@@ -318,17 +339,17 @@ function OnlineMultiplayer ({ socket, username }) {
             alignSelf='start'
             color='text.primary'
           >
-            {white.username === username
-              ? black.username
-              : white.username}
+            {white.username === username ? black.username : white.username}
           </Typography>
           <Chessboard
+          style={!yourTurn && {cursor:'pointer'}}
             orientation={black.id === socket.id ? 'black' : 'white'}
             undo
             calcWidth={({ screenWidth, screenHeight }) =>
               screenHeight < screenWidth
                 ? 0.75 * screenHeight
-                : 0.95 * screenWidth}
+                : 0.95 * screenWidth
+            }
             position={fen}
             transitionDuration={50}
             draggable={yourTurn && !gameOver}
@@ -354,31 +375,39 @@ function OnlineMultiplayer ({ socket, username }) {
             alignSelf='end'
             color='text.primary'
           >
-            {black.username === username
-              ? black.username
-              : white.username}
+            {black.username === username ? black.username : white.username}
           </Typography>
         </Stack>
 
         <Box py={2}>
-          <ButtonGroup>
+          {!gameOver ? (
+            <ButtonGroup>
+              <Button
+                sx={{ marginRight: '2px' }}
+                variant='contained'
+                color='primary'
+                onClick={offerDraw}
+              >
+                offer draw
+              </Button>
+              <Button
+                sx={{ marginLeft: '2px' }}
+                color='secondary'
+                variant='contained'
+                onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
+              >
+                resign
+              </Button>
+            </ButtonGroup>
+          ) : (
             <Button
-              sx={{ marginRight: '2px' }}
               variant='contained'
               color='primary'
-              onClick={offerDraw}
+              onClick={() => navigate('/')}
             >
-              offer draw
+              Back to menu
             </Button>
-            <Button
-              sx={{ marginLeft: '2px' }}
-              color='secondary'
-              variant='contained'
-              onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
-            >
-              resign
-            </Button>
-          </ButtonGroup>
+          )}
         </Box>
         <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
           <DialogTitle>Are you sure?</DialogTitle>

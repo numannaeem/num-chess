@@ -1,15 +1,11 @@
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Modal,
-  Typography
 } from '@mui/material'
-import { grey } from '@mui/material/colors'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 

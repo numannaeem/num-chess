@@ -42,7 +42,7 @@ function WaitingRoom ({ socket }) {
     socket && socket.on('init-game', (data) => {
       localStorage.setItem('roomMeta', JSON.stringify({ roomName, time: new Date() }))
       navigate('/online-multiplayer', {
-        state: data
+        state: {...data, roomName}
       })
     })
   }, [socket, navigate, roomName])
