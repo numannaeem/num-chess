@@ -2,16 +2,17 @@ import React, { useEffect, useRef, useState } from 'react'
 import Chessboard from 'chessboardjsx'
 import Chess from 'chess.js'
 import {
-  Box,
   Button,
   ButtonGroup,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
+  Stack
 } from '@mui/material'
 import GameOverModal from './GameOverModal'
+import NavBar from './NavBar'
 
 function LocalMultiplayer () {
   const [fen, setFen] = useState('start')
@@ -23,6 +24,7 @@ function LocalMultiplayer () {
   // gameWinner = 'd' for draw, 'w' for white wins, 'b' for black wins
   const [gameWinner, setGameWinner] = useState(null)
   const [overModalOpen, setOverModalOpen] = useState(false)
+  const [subtitleText, setSubtitleText] = useState('')
 
   const game = useRef(null)
 
@@ -47,15 +49,14 @@ function LocalMultiplayer () {
           backgroundColor: '#f02e32'
         }
       })
-      setGameWinner(move.color === 'b' ? 'black' : 'white')
+      setGameWinner(move.color === 'b' ? 'Black' : 'White')
+      setSubtitleText('Win by checkmate')
     } else if (game.current.in_stalemate()) {
-      // TODO: handle stalemate
       setGameWinner('draw')
-      // setTimeout(() => alert('STALEMATE'), 300)
+      setSubtitleText('Draw by stalemate')
     } else {
-      // TODO: handle draw by insufficient material/50-move rule/threefold repetition
       setGameWinner('draw')
-      // setTimeout(() => alert('DRAW'), 300)
+      setSubtitleText('Draw by insufficient material/threefold repetition')
     }
     setOverModalOpen(true)
   }
@@ -176,23 +177,21 @@ function LocalMultiplayer () {
         isOpen={overModalOpen}
         onClose={() => setOverModalOpen(false)}
         restartGame={restartGame}
+        subtitleText={subtitleText}
       />
-      <Box
-        height='100vh'
+      <Stack
+        minHeight='100vh'
         bgcolor='background.paper'
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '1rem',
-          minHeight: '100vh',
-          flexDirection: 'column'
-        }}
+        justifyContent='space-between'
+        alignItems='center'
+        gap={2}
+        pb={2}
       >
+        <NavBar />
         <Chessboard
           undo
           calcWidth={({ screenWidth, screenHeight }) =>
-            screenHeight < screenWidth ? 0.8 * screenHeight : 0.95 * screenWidth}
+            screenHeight < screenWidth ? 0.75 * screenHeight : 0.95 * screenWidth}
           position={fen}
           transitionDuration={50}
           draggable={!gameOver}
@@ -238,7 +237,7 @@ function LocalMultiplayer () {
           </Button>
         </ButtonGroup>
         <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
-          <DialogTitle>Restart the game?</DialogTitle>
+          <DialogTitle>Are you sure?</DialogTitle>
           <DialogContent>
             <DialogContentText>This cannot be undone</DialogContentText>
           </DialogContent>
@@ -263,7 +262,7 @@ function LocalMultiplayer () {
 							<Typography color={'secondary.light'}>{g.san}</Typography>
 						))}
 					</Box> */}
-      </Box>
+      </Stack>
     </>
   )
 }

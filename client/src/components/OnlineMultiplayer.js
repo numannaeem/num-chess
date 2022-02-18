@@ -19,8 +19,11 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import CloseIcon from '@mui/icons-material/Close'
 import CheckIcon from '@mui/icons-material/Check'
 import GameOverModal from './GameOverModal'
+import PlayerLeftModal from './PlayerLeftModal'
+import NavBar from './NavBar'
 
 function OnlineMultiplayer ({ socket, username }) {
+  console.log('RENDER')
   const location = useLocation()
   const navigate = useNavigate()
   const [white, setWhite] = useState({
@@ -41,10 +44,30 @@ function OnlineMultiplayer ({ socket, username }) {
   const [subtitleText, setSubtitleText] = useState('')
   const [overModalOpen, setOverModalOpen] = useState(false)
   const [drawSnackbarOpen, setDrawSnackbarOpen] = useState(false)
+  const [backdropOpen, setBackdropOpen] = useState(false)
   const [yourTurn, setYourTurn] = useState(
     location.state?.white?.id === socket?.id
     // location.state.white contains the data of white player, sent over from WaitingRoom
   )
+
+  const highlightLastMove = useCallback(() => {
+    const fromSquare =
+      gameHistory.length && gameHistory[gameHistory.length - 1].from
+    const toSquare =
+      gameHistory.length && gameHistory[gameHistory.length - 1].to
+    return {
+      ...(gameHistory.length && {
+        [fromSquare]: {
+          backgroundColor: 'rgba(255, 255, 0, 0.4)'
+        }
+      }),
+      ...(gameHistory.length && {
+        [toSquare]: {
+          backgroundColor: 'rgba(255, 255, 0, 0.4)'
+        }
+      })
+    }
+  }, [gameHistory])
 
   const finishGame = useCallback(
     move => {
@@ -93,11 +116,22 @@ function OnlineMultiplayer ({ socket, username }) {
 
   const game = useRef(null)
 
+  // useEffect to highlight last move
+  useEffect(() => {
+    setSquareStyles(prev => {
+      return {
+        ...prev,
+        ...highlightLastMove()
+      }
+    })
+  }, [gameHistory, highlightLastMove])
+
   useEffect(() => {
     socket?.on('next-turn', data => {
       const move = game.current.move(data.move)
       setFen(game.current.fen())
       if (move) {
+        setGameHistory(game.current.history({ verbose: true }))
         if (game.current.in_check()) {
           console.log(move)
           const kingPosition = getPiecePosition({
@@ -127,10 +161,8 @@ function OnlineMultiplayer ({ socket, username }) {
       // setSubtitleText(`${data.winner} won by checkmate`)
     })
 
-    socket.on('player-left', loserUsername => {
-      setGameWinner(username)
-      setSubtitleText(`${loserUsername} lost connection`)
-      finishGame()
+    socket.on('player-left', () => {
+      setBackdropOpen(true)
     })
 
     socket.on('draw-offered', () => {
@@ -150,14 +182,17 @@ function OnlineMultiplayer ({ socket, username }) {
     })
     socket.on('update-data', data => {
       setYourTurn(data.currentPlayer.id === socket.id)
-      game.current.load(data.fen)
+      if (data.fen) {
+        game.current.load(data.fen)
+      } else game.current = new Chess()
       setFen(game.current.fen())
-      setWhite(data.players.find(p => (p.color === 'white')))
-      setBlack(data.players.find(p => (p.color === 'black')))
+      setWhite(data.players.find(p => p.color === 'white'))
+      setBlack(data.players.find(p => p.color === 'black'))
+      setBackdropOpen(false)
     })
   }, [socket, username, finishGame, white])
 
-  //initial game.current useEffect
+  // initial game.current useEffect
   useEffect(() => {
     if (!game.current) {
       game.current = new Chess()
@@ -199,6 +234,8 @@ function OnlineMultiplayer ({ socket, username }) {
 
     // illegal move
     if (move === null) return
+
+    setSquareStyles({})
     setGameHistory(game.current.history({ verbose: true }))
     setFen(game.current.fen())
 
@@ -222,8 +259,6 @@ function OnlineMultiplayer ({ socket, username }) {
           backgroundColor: 'rgba(24,255,186,0.6)'
         }
       })
-    } else {
-      setSquareStyles({})
     }
   }
   const onSquareClick = square => {
@@ -307,8 +342,17 @@ function OnlineMultiplayer ({ socket, username }) {
     finishGame()
   }
 
+  const handleOpponentTimedOut = () => {
+    setGameWinner(username)
+    setSubtitleText(
+      `${white.id === socket.id ? 'White' : 'Black'} won by timeout`
+    )
+    finishGame()
+  }
+
   return (
     <>
+      <PlayerLeftModal onTimeout={handleOpponentTimedOut} setBackdropOpen={setBackdropOpen} backdropOpen={backdropOpen} />
       <GameOverModal
         winner={gameWinner}
         isOpen={overModalOpen}
@@ -317,15 +361,21 @@ function OnlineMultiplayer ({ socket, username }) {
         subtitleText={subtitleText}
       />
       <Stack
-        height='100vh'
+        minHeight='100vh'
         bgcolor='background.paper'
         justifyContent='space-around'
         alignItems='center'
       >
+        <NavBar
+          onClick={() => {
+            socket.emit('resign', white.id === socket.id ? black.id : white.id)
+            navigate('/')
+          }}
+        />
         <Stack
+          flexGrow={1}
+          py={3}
           px={{ xs: 1, md: 5 }}
-          // height='fill-available'
-          width='fill-available'
           direction={{ xs: 'column', md: 'row' }}
           alignItems='center'
           justifyContent={{ xs: 'center', md: 'space-evenly' }}
@@ -334,22 +384,22 @@ function OnlineMultiplayer ({ socket, username }) {
             fontWeight='800'
             flexGrow={{ xs: 0, md: 1 }}
             flexBasis={0}
-            fontSize={{ xs: '1.5rem', md: '4rem' }}
+            fontSize={{ xs: '1.5rem', md: '3rem' }}
             textAlign='center'
             alignSelf='start'
             color='text.primary'
+            mr={4}
           >
             {white.username === username ? black.username : white.username}
           </Typography>
           <Chessboard
-          style={!yourTurn && {cursor:'pointer'}}
+            style={!yourTurn && { cursor: 'pointer' }}
             orientation={black.id === socket.id ? 'black' : 'white'}
             undo
             calcWidth={({ screenWidth, screenHeight }) =>
               screenHeight < screenWidth
                 ? 0.75 * screenHeight
-                : 0.95 * screenWidth
-            }
+                : 0.95 * screenWidth}
             position={fen}
             transitionDuration={50}
             draggable={yourTurn && !gameOver}
@@ -370,44 +420,47 @@ function OnlineMultiplayer ({ socket, username }) {
             fontWeight='800'
             flexGrow={{ xs: 0, md: 1 }}
             flexBasis={0}
-            fontSize={{ xs: '1.5rem', md: '4rem' }}
+            fontSize={{ xs: '1.5rem', md: '3rem' }}
             textAlign='center'
             alignSelf='end'
             color='text.primary'
+            ml={4}
           >
             {black.username === username ? black.username : white.username}
           </Typography>
         </Stack>
 
         <Box py={2}>
-          {!gameOver ? (
-            <ButtonGroup>
+          {!gameOver
+            ? (
+              <ButtonGroup>
+                <Button
+                  sx={{ marginRight: '2px' }}
+                  variant='contained'
+                  color='primary'
+                  onClick={offerDraw}
+                >
+                  🤝 offer draw
+                </Button>
+                <Button
+                  sx={{ marginLeft: '2px' }}
+                  color='secondary'
+                  variant='contained'
+                  onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
+                >
+                  🏳️ resign
+                </Button>
+              </ButtonGroup>
+              )
+            : (
               <Button
-                sx={{ marginRight: '2px' }}
                 variant='contained'
                 color='primary'
-                onClick={offerDraw}
+                onClick={() => navigate('/')}
               >
-                offer draw
+                Back to menu
               </Button>
-              <Button
-                sx={{ marginLeft: '2px' }}
-                color='secondary'
-                variant='contained'
-                onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
-              >
-                resign
-              </Button>
-            </ButtonGroup>
-          ) : (
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={() => navigate('/')}
-            >
-              Back to menu
-            </Button>
-          )}
+              )}
         </Box>
         <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
           <DialogTitle>Are you sure?</DialogTitle>
@@ -425,18 +478,6 @@ function OnlineMultiplayer ({ socket, username }) {
             </Button>
           </DialogActions>
         </Dialog>
-
-        {/* <Box
-						margin={3}
-						marginLeft={0}
-						flexGrow={1}
-						height={'100%'}
-						overflowY={'auto'}
-					>
-						{gameHistory.map(g => (
-							<Typography color={'secondary.light'}>{g.san}</Typography>
-						))}
-					</Box> */}
       </Stack>
       <Snackbar
         open={drawSnackbarOpen}

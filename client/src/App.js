@@ -11,7 +11,8 @@ import WaitingRoom from './components/WaitingRoom'
 import { io } from 'socket.io-client'
 import baseUrl from './baseUrl'
 import OnlineMultiplayer from './components/OnlineMultiplayer'
-import { Typography, Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
+import Matchmaking from './components/Matchmaking'
 
 const theme = createTheme({
   palette: {
@@ -48,6 +49,33 @@ function App () {
     return () => newSocket.close()
   }, [username])
 
+  useEffect(() => {
+    socket?.on('error-occurred', err => {
+      toast.error(<ErrorToast />, {
+        position: 'top-right',
+        autoClose: false,
+        hideProgressBar: true,
+        closeOnClick: true,
+        draggable: true,
+        theme: 'colored',
+        onClick: () => {
+          window.location.assign('/')
+        }
+      })
+    })
+  }, [socket])
+
+  const ErrorToast = ({ closeToast, toastProps }) => {
+    return (
+      <Box>
+        <Typography fontWeight='bolder'>Something went wrong!</Typography>
+        <Typography fontSize='80%'>
+          Click here to return to menu and start a new game :/
+        </Typography>
+      </Box>
+    )
+  }
+
   if (!username) {
     return (
       <ThemeProvider theme={theme}>
@@ -62,6 +90,7 @@ function App () {
           <Route path='/' element={<HomeComponent toast={toast} socket={socket} />} />
           <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
           <Route path='/room' element={<WaitingRoom socket={socket} />} />
+          <Route path='/matchmake' element={<Matchmaking socket={socket} />} />
           {socket && <Route path='/online-multiplayer' element={<OnlineMultiplayer username={username} socket={socket} />} />}
         </Routes>
         <ToastContainer />

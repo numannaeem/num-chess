@@ -20,9 +20,6 @@ import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
 function HomeComponent ({ toast, socket }) {
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
-  // const [innerUserName, setInnerUserName] = useState('')
-  // const [inputLoading, setInputLoading] = useState(false)
-  // const [error, setError] = useState(false)
   const hoverStyles = text => {
     return {
       flexGrow: 0,
@@ -56,33 +53,6 @@ function HomeComponent ({ toast, socket }) {
   }
   const handleLocalGame = () => {
     navigate('local-multiplayer')
-  }
-
-  useEffect(() => {
-    socket?.on('error-occurred', err => {
-      toast.error(<ErrorToast />, {
-        position: 'top-right',
-        autoClose: false,
-        hideProgressBar: true,
-        closeOnClick: true,
-        draggable: true,
-        theme:'colored',
-        onClick: () => {
-          navigate('/')
-        }
-      })
-    })
-  }, [socket, toast, navigate])
-
-  const ErrorToast = ({ closeToast, toastProps }) => {
-    return (
-      <Box>
-        <Typography fontWeight={'bolder'}>Something went wrong!</Typography>
-        <Typography fontSize='80%'>
-          Click here to return to menu and start a new game :/
-        </Typography>
-      </Box>
-    )
   }
 
   return (
@@ -136,7 +106,7 @@ function HomeComponent ({ toast, socket }) {
                   <InputAdornment position='end'>
                     <IconButton
                       color='secondary'
-                      disabled={roomName.length <= 0}
+                      disabled={roomName.length < 6}
                       onClick={handleSubmit}
                       edge='end'
                     >
@@ -148,7 +118,6 @@ function HomeComponent ({ toast, socket }) {
             />
             <Divider />
             <Button
-              // disabled={roomName.length === 0}
               onClick={() => navigate('room')}
               color='secondary'
               type='submit'
@@ -158,7 +127,7 @@ function HomeComponent ({ toast, socket }) {
               Create Room
             </Button>
             <Button
-              // disabled={roomName.length === 0}
+              onClick={() => navigate('matchmake')}
               color='secondary'
               type='submit'
               variant='outlined'
@@ -182,7 +151,8 @@ function HomeComponent ({ toast, socket }) {
                 target='_blank'
                 sx={{
                   '&:hover': {
-                    color: 'lightblue'
+                    fontWeight: 'bolder',
+                    color: 'gray'
                   }
                 }}
                 color='inherit'
