@@ -7,6 +7,9 @@ const { Server } = require('socket.io')
 const io = new Server(server)
 const { addToRoom } = require('./serverUtils')
 
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') { res.redirect(`https://${req.header('host')}${req.url}`) } else next()
+})
 app.use(express.json()) // used to parse json requests
 app.use(express.static(path.resolve(__dirname, './client/build')))
 
@@ -157,12 +160,6 @@ io.on('connection', socket => {
       .to(socket.id)
       .emit('error-occurred', err)
   }
-})
-
-app.get('/checkRoom/:roomName', (req, res) => {
-  if (roomData[req.params.roomName]?.players.length === 2) {
-    res.status(404).send('room already taken')
-  } else res.status(200).send('room available')
 })
 
 app.use((req, res, next) => {

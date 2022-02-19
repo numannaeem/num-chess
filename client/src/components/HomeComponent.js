@@ -7,7 +7,6 @@ import cornyLine from '../taglines'
 import {
   Divider,
   Fade,
-  Grow,
   IconButton,
   InputAdornment,
   Link,
@@ -16,10 +15,13 @@ import {
   Typography
 } from '@mui/material'
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
+import SettingsSubmenu from './SettingsSubmenu'
 
-function HomeComponent ({ toast, socket }) {
+function HomeComponent ({ toast, socket, setTheme, theme, setOuterUsername }) {
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
+  const [settingsMenu, setSettingsMenu] = useState(false)
+
   const hoverStyles = text => {
     return {
       flexGrow: 0,
@@ -53,87 +55,133 @@ function HomeComponent ({ toast, socket }) {
   }
 
   return (
-    <Box height='100vh' overflow='hidden' px={3} bgcolor='background.paper'>
+    <Box
+      height='100vh' overflow='hidden' sx={{
+        transition: 'background-color 300ms ease-out'
+      }} px={3} bgcolor='background.paper'
+    >
       <Stack
         height='100%'
         alignItems='center'
-        justifyContent='flex-end'
-        spacing={10}
+        justifyContent='space-between'
+        // spacing={}
       >
         <Fade onEntered={() => setEntered(1)} in timeout={500}>
-          <Box flexBasis='100%' mt={10} textAlign='center'>
+          <Stack
+            alignItems='center'
+            justifyContent='center'
+            flexGrow={1}
+            textAlign='center'
+            py={2}
+          >
             <Typography variant='h2' fontWeight={600} color='primary'>
               NumChess♙
             </Typography>
-            <Typography mt={2} variant='subtitle1' color='text.secondary'>
+            <Typography mt={1} variant='subtitle1' color='text.secondary'>
               {cornyLine}
             </Typography>
-          </Box>
-        </Fade>
-        <Grow in={entered >= 1} onEntered={() => setEntered(2)} timeout={400}>
-          <Stack spacing={1} alignItems='center'>
-            <Button
-              color='primary'
-              type='submit'
-              variant='outlined'
-              sx={hoverStyles('"⚔️"')}
-              onClick={() => navigate('local-multiplayer')}
-            >
-              Local multiplayer
-            </Button>
-            <Divider variant='middle' />
-            <TextField
-              onKeyDown={e => e.key === 'Enter' && roomName.length === 6 && handleSubmit()}
-              color='secondary'
-              variant='outlined'
-              size='small'
-              label='Join Room'
-              value={roomName}
-              autoComplete='off'
-              onChange={e => {
-                if (
-                  e.target.value.match(/^[0-9a-zA-Z]*$/) &&
-                  e.target.value.length <= 6
-                ) {
-                  setRoomName(e.target.value.toUpperCase())
-                }
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position='end'>
-                    <IconButton
-                      color='secondary'
-                      disabled={roomName.length !== 6}
-                      onClick={handleSubmit}
-                      edge='end'
-                    >
-                      <ArrowIcon />
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-            />
-            <Divider />
-            <Button
-              onClick={() => navigate('room')}
-              color='secondary'
-              type='submit'
-              variant='outlined'
-              sx={hoverStyles('"➕"')}
-            >
-              Create Room
-            </Button>
-            <Button
-              onClick={() => navigate('matchmake')}
-              color='secondary'
-              type='submit'
-              variant='outlined'
-              sx={hoverStyles('"🔎"')}
-            >
-              Random Game
-            </Button>
           </Stack>
-        </Grow>
+        </Fade>
+        <Box position='relative'>
+          <Slide
+            direction='right'
+            in={entered >= 1 && !settingsMenu}
+            onEntered={() => setEntered(2)}
+            timeout={300}
+          >
+            <Stack py={5} spacing={1} alignItems='center'>
+              <Button
+                color='primary'
+                type='submit'
+                variant='outlined'
+                sx={hoverStyles('"⚔️"')}
+                onClick={() => navigate('local-multiplayer')}
+              >
+                Local multiplayer
+              </Button>
+              <Divider variant='middle' />
+              <Button
+                onClick={() => navigate('room')}
+                color='secondary'
+                type='submit'
+                variant='outlined'
+                sx={hoverStyles('"➕"')}
+              >
+                Create Room
+              </Button>
+              <TextField
+                onKeyDown={e =>
+                  e.key === 'Enter' && roomName.length === 6 && handleSubmit()}
+                color='secondary'
+                variant='outlined'
+                size='small'
+                label='Join Room'
+                value={roomName}
+                autoComplete='off'
+                onChange={e => {
+                  if (
+                    e.target.value.match(/^[0-9a-zA-Z]*$/) &&
+                    e.target.value.length <= 6
+                  ) {
+                    setRoomName(e.target.value.toUpperCase())
+                  }
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        color='secondary'
+                        disabled={roomName.length !== 6}
+                        onClick={handleSubmit}
+                        edge='end'
+                      >
+                        <ArrowIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+
+              <Button
+                onClick={() => navigate('matchmake')}
+                color='secondary'
+                type='submit'
+                variant='outlined'
+                sx={hoverStyles('"🔎"')}
+              >
+                Random Game
+              </Button>
+              <Divider />
+
+              <Button
+                onClick={() => setSettingsMenu(true)}
+                color='primary'
+                type='submit'
+                variant='outlined'
+                sx={hoverStyles('"⚙️"')}
+              >
+                Settings
+              </Button>
+            </Stack>
+          </Slide>
+          <Slide
+            unmountOnExit
+            direction='left'
+            in={entered >= 1 && settingsMenu}
+            onEntered={() => setEntered(2)}
+            timeout={300}
+          >
+            <Box width='100%' top='0' position='absolute'>
+              <SettingsSubmenu
+                setTheme={setTheme}
+                toast={toast}
+                setOuterUsername={setOuterUsername}
+                theme={theme}
+                setSettingsMenu={setSettingsMenu}
+              />
+            </Box>
+          </Slide>
+        </Box>
         <Slide timeout={600} direction='up' in={entered === 2}>
           <Box
             justifySelf='flex-end'
