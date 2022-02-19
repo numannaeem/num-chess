@@ -17,7 +17,14 @@ import {
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
 import SettingsSubmenu from './SettingsSubmenu'
 
-function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username }) {
+function HomeComponent ({
+  toast,
+  socket,
+  setTheme,
+  theme,
+  setUsername,
+  username
+}) {
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
   const [settingsMenu, setSettingsMenu] = useState(false)
@@ -56,9 +63,13 @@ function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username 
 
   return (
     <Box
-      height='100vh' overflow='hidden' sx={{
+      height='100vh'
+      overflow='hidden'
+      sx={{
         transition: 'background-color 300ms ease-out'
-      }} px={3} bgcolor='background.paper'
+      }}
+      px={3}
+      bgcolor='background.paper'
     >
       <Stack
         height='100%'
@@ -73,8 +84,9 @@ function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username 
             flexGrow={1}
             textAlign='center'
             py={2}
+            mx={2}
           >
-            <Typography variant='h2' fontWeight={600} color='primary'>
+            <Typography variant={'h3'} fontWeight={600} color='primary'>
               NumChess♙
             </Typography>
             <Typography mt={1} variant='subtitle1' color='text.secondary'>
@@ -87,7 +99,7 @@ function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username 
             direction='right'
             in={entered >= 1 && !settingsMenu}
             onEntered={() => setEntered(2)}
-            timeout={300}
+            timeout={{ enter: 300, exit: 100 }}
           >
             <Stack py={5} spacing={1} alignItems='center'>
               <Button
@@ -111,7 +123,8 @@ function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username 
               </Button>
               <TextField
                 onKeyDown={e =>
-                  e.key === 'Enter' && roomName.length === 6 && handleSubmit()}
+                  e.key === 'Enter' && roomName.length === 6 && handleSubmit()
+                }
                 color='secondary'
                 variant='outlined'
                 size='small'
@@ -169,7 +182,7 @@ function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username 
             direction='left'
             in={entered >= 1 && settingsMenu}
             onEntered={() => setEntered(2)}
-            timeout={300}
+            timeout={{ enter: 300, exit: 100 }}
           >
             <Box width='100%' top='0' position='absolute'>
               <SettingsSubmenu
@@ -191,7 +204,7 @@ function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username 
             borderRadius='1rem 1rem 0 0'
             bgcolor='rgba(155, 155, 155, 0.2)'
           >
-            <Typography color='text.primary' fontWeight='600'>
+            <Typography fontSize={'85%'} color='text.primary' fontWeight='600'>
               made by{' '}
               <Link
                 target='_blank'

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 function NavBar ({ onClick }) {
   const navigate = useNavigate()
   return (
-    <AppBar sx={{ zIndex: 1202 }} position='sticky'>
+    <AppBar sx={{ zIndex: 1202 }} position='static'>
       <Toolbar>
         <IconButton
           size='large'

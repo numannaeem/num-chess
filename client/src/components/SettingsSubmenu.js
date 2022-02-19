@@ -50,7 +50,7 @@ function SettingsSubmenu ({
 
   return (
     <Stack py={5} spacing={2}>
-      <Stack direction='row' alignItems='center'>
+      <Stack position='relative' direction='row' alignItems='center'>
         <Button
           onClick={() => setSettingsMenu(false)}
           color='primary'

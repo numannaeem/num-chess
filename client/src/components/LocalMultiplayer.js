@@ -184,75 +184,77 @@ function LocalMultiplayer () {
         bgcolor='background.paper'
         justifyContent='space-between'
         alignItems='center'
-        gap={2}
-        pb={2}
+        // gap={2}
       >
         <NavBar />
-        <Chessboard
-          undo
-          calcWidth={({ screenWidth, screenHeight }) =>
-            screenHeight < screenWidth
-              ? 0.75 * screenHeight
-              : 0.95 * screenWidth}
-          position={fen}
-          transitionDuration={50}
-          draggable={!gameOver}
-          onDrop={onDrop}
-          boardStyle={{
-            borderRadius: '4px',
-            overflow: 'hidden',
-            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
-            marginBottom: '1rem',
-            backgroundColor: 'transparent'
-          }}
-          squareStyles={squareStyles}
-          onSquareClick={onSquareClick}
-          darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
-          lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
-        />
+        <Stack flexGrow={1} alignItems='center' justifyContent={'center'} >
+          <Chessboard
+            undo
+            calcWidth={({ screenWidth, screenHeight }) =>
+              screenHeight < screenWidth
+                ? 0.75 * screenHeight
+                : 0.95 * screenWidth
+            }
+            position={fen}
+            transitionDuration={50}
+            draggable={!gameOver}
+            onDrop={onDrop}
+            boardStyle={{
+              borderRadius: '4px',
+              overflow: 'hidden',
+              boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+              marginBottom: '1rem',
+              backgroundColor: 'transparent'
+            }}
+            squareStyles={squareStyles}
+            onSquareClick={onSquareClick}
+            darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
+            lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
+          />
 
-        <ButtonGroup>
-          {!gameOver && (
+          <ButtonGroup sx={{ marginBlock: '8px' }}>
+            {!gameOver && (
+              <Button
+                sx={{ marginRight: '2px' }}
+                disabled={gameHistory.length === 0}
+                variant='contained'
+                color='primary'
+                onClick={() => {
+                  game.current.undo()
+                  setSquareStyles([])
+                  setGameHistory(game.current.history({ verbose: true }))
+                  setFen(game.current.fen())
+                }}
+              >
+                undo move
+              </Button>
+            )}
             <Button
-              sx={{ marginRight: '2px' }}
+              sx={{ marginLeft: '2px' }}
               disabled={gameHistory.length === 0}
+              color='secondary'
               variant='contained'
-              color='primary'
-              onClick={() => {
-                game.current.undo()
-                setSquareStyles([])
-                setGameHistory(game.current.history({ verbose: true }))
-                setFen(game.current.fen())
-              }}
+              onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
             >
-              undo move
+              restart game
             </Button>
-          )}
-          <Button
-            sx={{ marginLeft: '2px' }}
-            disabled={gameHistory.length === 0}
-            color='secondary'
-            variant='contained'
-            onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
-          >
-            restart game
-          </Button>
-        </ButtonGroup>
-        <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
-          <DialogTitle>Are you sure?</DialogTitle>
-          <DialogContent>
-            <DialogContentText>This cannot be undone</DialogContentText>
-          </DialogContent>
-          <DialogActions color='secondary'>
-            <Button color='secondary' onClick={() => setAlertOpen(false)}>
-              Cancel
-            </Button>
-            <Button color='secondary' onClick={restartGame} autoFocus>
-              Restart
-            </Button>
-          </DialogActions>
-        </Dialog>
+          </ButtonGroup>
+        </Stack>
       </Stack>
+      <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
+        <DialogTitle>Are you sure?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>This cannot be undone</DialogContentText>
+        </DialogContent>
+        <DialogActions color='secondary'>
+          <Button color='secondary' onClick={() => setAlertOpen(false)}>
+            Cancel
+          </Button>
+          <Button color='secondary' onClick={restartGame} autoFocus>
+            Restart
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }
