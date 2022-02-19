@@ -13,22 +13,23 @@ function SettingsSubmenu ({
   setSettingsMenu,
   setTheme,
   theme,
-  setOuterUsername,
-  toast
+  setUsername,
+  toast,
+  username
 }) {
-  const [username, setUsername] = useState('')
+  const [innerUsername, setInnerUsername] = useState(username)
   const [error, setError] = useState('')
 
   const handleSubmit = () => {
-    if (username.length < 3) {
+    if (innerUsername.length < 3) {
       setError('Minimum 3 characters required')
       return
     }
-    if (username.length > 10) {
+    if (innerUsername.length > 10) {
       setError('Maximum 10 characters allowed')
       return
     }
-    if (!username.match(/^[0-9a-zA-Z_]+$/)) {
+    if (!innerUsername.match(/^[0-9a-zA-Z_]+$/)) {
       setError('Underscore is the only special character allowed')
       return
     }
@@ -42,14 +43,14 @@ function SettingsSubmenu ({
       theme: theme || 'dark'
     })
     setError('')
-    setOuterUsername(username)
-    window.localStorage.setItem('username', username)
+    setUsername(innerUsername)
+    window.localStorage.setItem('username', innerUsername)
     setSettingsMenu(false)
   }
 
   return (
-    <Stack py={5} spacing={1}>
-      <Stack mb={2} direction='row' alignItems='center'>
+    <Stack py={5} spacing={2}>
+      <Stack direction='row' alignItems='center'>
         <Button
           onClick={() => setSettingsMenu(false)}
           color='primary'
@@ -64,6 +65,7 @@ function SettingsSubmenu ({
         </Button>
         <Typography
           px={4}
+          py='6px'
           flexGrow={1}
           textAlign='center'
           color='primary.main'
@@ -96,19 +98,19 @@ function SettingsSubmenu ({
         error={error}
         size='small'
         label='Change username'
-        value={username}
+        value={innerUsername}
         autoComplete='off'
         onChange={e => {
           if (e.target.value.length === 0) setError('')
-          setUsername(e.target.value)
+          setInnerUsername(e.target.value)
         }}
         InputProps={{
-          endAdornment: username.length
+          endAdornment: innerUsername.length && username !== innerUsername
             ? (
               <InputAdornment position='end'>
                 <IconButton
                   color='secondary'
-                  disabled={username.length === 0}
+                  disabled={innerUsername.length === 0}
                   onClick={handleSubmit}
                   edge='end'
                 >

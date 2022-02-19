@@ -17,7 +17,7 @@ import {
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
 import SettingsSubmenu from './SettingsSubmenu'
 
-function HomeComponent ({ toast, socket, setTheme, theme, setOuterUsername }) {
+function HomeComponent ({ toast, socket, setTheme, theme, setUsername, username }) {
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
   const [settingsMenu, setSettingsMenu] = useState(false)
@@ -175,8 +175,9 @@ function HomeComponent ({ toast, socket, setTheme, theme, setOuterUsername }) {
               <SettingsSubmenu
                 setTheme={setTheme}
                 toast={toast}
-                setOuterUsername={setOuterUsername}
+                setUsername={setUsername}
                 theme={theme}
+                username={username}
                 setSettingsMenu={setSettingsMenu}
               />
             </Box>
@@ -185,7 +186,7 @@ function HomeComponent ({ toast, socket, setTheme, theme, setOuterUsername }) {
         <Slide timeout={600} direction='up' in={entered === 2}>
           <Box
             justifySelf='flex-end'
-            py={2}
+            py={1}
             px={3}
             borderRadius='1rem 1rem 0 0'
             bgcolor='rgba(155, 155, 155, 0.2)'

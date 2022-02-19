@@ -88,7 +88,7 @@ function App () {
     <ThemeProvider theme={theme}>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<HomeComponent theme={themeMode} setOuterUsername={setUsername} setTheme={setThemeMode} toast={toast} socket={socket} />} />
+          <Route path='/' element={<HomeComponent theme={themeMode} username={username} setUsername={setUsername} setTheme={setThemeMode} toast={toast} socket={socket} />} />
           <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
           <Route path='/room' element={<WaitingRoom socket={socket} />} />
           <Route path='/matchmake' element={<Matchmaking socket={socket} />} />
