@@ -44,7 +44,7 @@ function WaitingRoom ({ socket }) {
     socket &&
       socket.on('init-game', data => {
         navigate('/online-multiplayer', {
-          state: { ...data, roomName }
+          state: data
         })
       })
   }, [socket, navigate, roomName])

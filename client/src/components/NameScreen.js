@@ -25,7 +25,7 @@ function NameScreen ({ setOuterUsername, toast }) {
       return
     }
     setOuterUsername(username)
-    localStorage.setItem('username', username)
+    window.localStorage.setItem('username', username)
     toast.success('Username set!', {
       position: 'bottom-right',
       autoClose: 2000,

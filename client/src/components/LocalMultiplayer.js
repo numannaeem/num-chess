@@ -71,9 +71,9 @@ function LocalMultiplayer () {
         return null
       })
       .filter(Number.isInteger)
-      .map(piece_index => {
-        const row = 'abcdefgh'[piece_index % 8]
-        const column = Math.ceil((64 - piece_index) / 8)
+      .map(pieceIndex => {
+        const row = 'abcdefgh'[pieceIndex % 8]
+        const column = Math.ceil((64 - pieceIndex) / 8)
         return row + column
       })
   }
@@ -191,7 +191,9 @@ function LocalMultiplayer () {
         <Chessboard
           undo
           calcWidth={({ screenWidth, screenHeight }) =>
-            screenHeight < screenWidth ? 0.75 * screenHeight : 0.95 * screenWidth}
+            screenHeight < screenWidth
+              ? 0.75 * screenHeight
+              : 0.95 * screenWidth}
           position={fen}
           transitionDuration={50}
           draggable={!gameOver}
@@ -250,18 +252,6 @@ function LocalMultiplayer () {
             </Button>
           </DialogActions>
         </Dialog>
-
-        {/* <Box
-						margin={3}
-						marginLeft={0}
-						flexGrow={1}
-						height={'100%'}
-						overflowY={'auto'}
-					>
-						{gameHistory.map(g => (
-							<Typography color={'secondary.light'}>{g.san}</Typography>
-						))}
-					</Box> */}
       </Stack>
     </>
   )

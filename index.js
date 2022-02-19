@@ -54,8 +54,27 @@ io.on('connection', socket => {
     socket.on('offer-draw', socketIdToOffer => {
       io.to(socketIdToOffer).emit('draw-offered')
     })
+
     socket.on('accept-draw', socketToAccept => {
       io.to(socketToAccept).emit('draw-accepted')
+    })
+
+    socket.on('offer-rematch', socketIdToOffer => {
+      io.to(socketIdToOffer).emit('rematch-offered')
+    })
+
+    socket.on('accept-rematch', () => {
+      const { roomName } = socket
+      const rand = Math.round(Math.random())
+      roomData[roomName].fen = null
+      roomData[roomName].players[rand].color = 'white' // first player becomes white
+      roomData[roomName].players[+!rand].color = 'black'
+      roomData[roomName].currentPlayer = roomData[roomName].players[rand]
+      io.in(roomName).emit('rematch-accepted', {
+        white: roomData[roomName].currentPlayer,
+        black: roomData[roomName].players[+!rand],
+        roomName
+      })
     })
 
     socket.on('resign', socketIdWhichWon => {
@@ -96,6 +115,8 @@ io.on('connection', socket => {
           }
           io.in(roomName).emit('update-data', roomData[roomName])
         }
+      } else {
+        socket.emit('game-over', { timedOut: true })
       }
     })
 

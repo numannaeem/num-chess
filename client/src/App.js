@@ -34,7 +34,7 @@ const theme = createTheme({
 })
 
 function App () {
-  const [username, setUsername] = useState(localStorage.getItem('username'))
+  const [username, setUsername] = useState(window.localStorage.getItem('username'))
   const [socket, setSocket] = useState(null)
 
   useEffect(() => {
@@ -50,7 +50,7 @@ function App () {
   }, [username])
 
   useEffect(() => {
-    socket?.on('error-occurred', err => {
+    socket?.on('error-occurred', () => {
       toast.error(<ErrorToast />, {
         position: 'top-right',
         autoClose: false,

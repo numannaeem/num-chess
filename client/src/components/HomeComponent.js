@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
 import Box from '@mui/material/Box'
@@ -34,7 +34,7 @@ function HomeComponent ({ toast, socket }) {
   }
   const navigate = useNavigate()
   const handleSubmit = () => {
-    if (roomName.length > 0) {
+    if (roomName.length === 6) {
       // setInputLoading(true)
       // e.preventDefault()
       // const res = await fetch(baseUrl+'/checkRoom/'+roomName)
@@ -50,9 +50,6 @@ function HomeComponent ({ toast, socket }) {
         }
       })
     }
-  }
-  const handleLocalGame = () => {
-    navigate('local-multiplayer')
   }
 
   return (
@@ -80,13 +77,13 @@ function HomeComponent ({ toast, socket }) {
               type='submit'
               variant='outlined'
               sx={hoverStyles('"⚔️"')}
-              onClick={handleLocalGame}
+              onClick={() => navigate('local-multiplayer')}
             >
               Local multiplayer
             </Button>
             <Divider variant='middle' />
             <TextField
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              onKeyDown={e => e.key === 'Enter' && roomName.length === 6 && handleSubmit()}
               color='secondary'
               variant='outlined'
               size='small'
@@ -106,7 +103,7 @@ function HomeComponent ({ toast, socket }) {
                   <InputAdornment position='end'>
                     <IconButton
                       color='secondary'
-                      disabled={roomName.length < 6}
+                      disabled={roomName.length !== 6}
                       onClick={handleSubmit}
                       edge='end'
                     >
