@@ -21,7 +21,9 @@ function App () {
 
   const theme = createTheme({
     palette: {
-      mode: themeMode
+      mode: themeMode,
+      // primary: purple,
+      // secondary: red
       // primary: {
       //   main: "#673ab7",
       //   light:"#9a67ea",
@@ -35,7 +37,7 @@ function App () {
     },
     typography: {
       fontFamily: 'JetBrains Mono, monospace'
-    }
+    },
   })
 
   useEffect(() => {

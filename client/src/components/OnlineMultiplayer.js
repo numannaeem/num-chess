@@ -2,15 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Chessboard from 'chessboardjsx'
 import Chess from 'chess.js'
 import {
-  Box,
   Button,
-  ButtonGroup,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Stack,
+  SvgIcon,
+  Tooltip,
   Typography
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -19,13 +19,16 @@ import PlayerLeftModal from './PlayerLeftModal'
 import NavBar from './NavBar'
 import DrawSnackbar from './DrawSnackbar'
 import RematchSnackbar from './RematchSnackbar'
+import { ReactComponent as HandshakeIcon } from '../svgIcons/handshake.svg'
+import { ReactComponent as WhiteFlagIcon } from '../svgIcons/whiteFlag.svg'
 
-const checkmateSound = new Audio('/victoryBell.wav')
-const pieceMoveSound = new Audio('/pieceMove.wav')
+const checkmateSound = new Audio('/sounds/victoryBell.wav')
+const pieceMoveSound = new Audio('/sounds/pieceMove.wav')
 
 function OnlineMultiplayer ({ socket, username }) {
   const location = useLocation()
   const navigate = useNavigate()
+
   const [white, setWhite] = useState({
     username: location.state?.white?.username,
     id: location.state?.white?.id
@@ -52,9 +55,6 @@ function OnlineMultiplayer ({ socket, username }) {
   )
 
   const highlightLastMove = useCallback(() => {
-    if(game.current?.in_checkmate())
-      checkmateSound?.play()
-    else pieceMoveSound?.play()
     const fromSquare =
       gameHistory.length && gameHistory[gameHistory.length - 1].from
     const toSquare =
@@ -123,6 +123,8 @@ function OnlineMultiplayer ({ socket, username }) {
 
   // useEffect to highlight last move
   useEffect(() => {
+    if (game.current?.in_checkmate()) checkmateSound?.play()
+    else pieceMoveSound?.play()
     setSquareStyles(highlightLastMove())
   }, [gameHistory, highlightLastMove])
 
@@ -154,7 +156,8 @@ function OnlineMultiplayer ({ socket, username }) {
 
     socket.on('player-left', () => {
       if (!gameOver) {
-        setBackdropOpen(true)}
+        setBackdropOpen(true)
+      }
     })
 
     socket.on('draw-offered', () => {
@@ -366,100 +369,125 @@ function OnlineMultiplayer ({ socket, username }) {
             navigate('/')
           }}
         />
-        <Stack
-          flexGrow={1}
-          width='fill-available'
-          py={3}
-          px={{ xs: 1, md: 5 }}
-          direction={{ xs: 'column', md: 'row' }}
-          alignItems='center'
-          justifyContent={{ xs: 'center', md: 'space-evenly' }}
-        >
-          <Typography
-            fontWeight='800'
-            flexGrow={{ xs: 0, md: 1 }}
-            flexBasis={0}
-            fontSize={{ xs: '1.5rem', md: '3rem' }}
-            alignSelf='start'
-            color='text.primary'
-            textAlign={{ xs: 'center', md: 'end' }}
-            mr={{ xs: 0, md: 3 }}
-            mb={{ xs: 1, md: 0 }}
+        <Stack flexGrow={1} justifyContent='center' alignItems='center'>
+          <Stack
             width='fill-available'
+            py={3}
+            px={{ xs: 1, md: 5 }}
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems='center'
+            justifyContent={{ xs: 'center', md: 'space-evenly' }}
           >
-            {white.username === username ? black.username : white.username}
-          </Typography>
-          <Chessboard
-            orientation={black.id === socket.id ? 'black' : 'white'}
-            undo
-            calcWidth={({ screenWidth, screenHeight }) =>
-              screenHeight < screenWidth
-                ? 0.75 * screenHeight
-                : 0.95 * screenWidth
-            }
-            position={fen}
-            transitionDuration={100}
-            draggable={yourTurn && !gameOver}
-            onDrop={onDrop}
-            boardStyle={{
-              borderRadius: '4px',
-              overflow: 'hidden',
-              boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
-              backgroundColor: 'transparent'
-            }}
-            squareStyles={squareStyles}
-            onSquareClick={yourTurn ? onSquareClick : () => {}}
-            darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
-            lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
-          />
-          <Typography
-            width='fill-available'
-            fontWeight='800'
-            flexGrow={{ xs: 0, md: 1 }}
-            flexBasis={0}
-            fontSize={{ xs: '1.5rem', md: '3rem' }}
-            alignSelf='end'
-            color='text.primary'
-            ml={{ xs: 0, md: 3 }}
-            mt={{ xs: 1, md: 0 }}
-            textAlign={{ xs: 'center', md: 'start' }}
-          >
-            {black.username === username ? black.username : white.username}
-          </Typography>
-        </Stack>
-
-        <Box my={3}>
-          {!gameOver ? (
-            <ButtonGroup>
+            <Typography
+              fontWeight='800'
+              flexGrow={{ xs: 0, md: 1 }}
+              flexBasis={0}
+              fontSize={{ xs: '1.5rem', md: '3rem' }}
+              alignSelf='start'
+              color='text.primary'
+              textAlign={{ xs: 'center', md: 'end' }}
+              mr={{ xs: 0, md: 3 }}
+              mb={{ xs: 1, md: 0 }}
+              width='fill-available'
+            >
+              {white.username === username ? black.username : white.username}
+            </Typography>
+            <Chessboard
+              orientation={black.id === socket.id ? 'black' : 'white'}
+              undo
+              calcWidth={({ screenWidth, screenHeight }) =>
+                screenHeight < screenWidth
+                  ? 0.75 * screenHeight
+                  : 0.95 * screenWidth
+              }
+              position={fen}
+              transitionDuration={100}
+              draggable={yourTurn && !gameOver}
+              onDrop={onDrop}
+              boardStyle={{
+                borderRadius: '4px',
+                overflow: 'hidden',
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+                backgroundColor: 'transparent'
+              }}
+              squareStyles={squareStyles}
+              onSquareClick={yourTurn ? onSquareClick : () => {}}
+              darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
+              lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
+            />
+            <Typography
+              width='fill-available'
+              fontWeight='800'
+              flexGrow={{ xs: 0, md: 1 }}
+              flexBasis={0}
+              fontSize={{ xs: '1.5rem', md: '3rem' }}
+              alignSelf='end'
+              color='text.primary'
+              ml={{ xs: 0, md: 3 }}
+              mt={{ xs: 1, md: 0 }}
+              textAlign={{ xs: 'center', md: 'start' }}
+            >
+              {black.username === username ? black.username : white.username}
+            </Typography>
+          </Stack>
+          
+          <Stack justifySelf='flex-start' direction='row' gap={2}  mb={2}>
+            {!gameOver || 1 ? (
+              <>
+                <Tooltip title='Offer draw' arrow>
+                  <Button
+                    color='grey'
+                    variant='contained'
+                    size='large'
+                    onClick={offerDraw}
+                    sx={{
+                      ':hover': {
+                        bgcolor: theme =>
+                          theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300' // theme.palette.primary.main
+                      },
+                      bgcolor: theme =>
+                        theme.palette.mode === 'dark' ? 'grey.900' : 'grey.200' // theme.palette.primary.main
+                    }}
+                  >
+                    <SvgIcon inheritViewBox>
+                      <HandshakeIcon />
+                    </SvgIcon>
+                  </Button>
+                </Tooltip>
+                <Tooltip title='Resign' arrow>
+                  <Button
+                    color='grey'
+                    variant='contained'
+                    size='large'
+                    sx={{
+                      ':hover': {
+                        bgcolor: theme =>
+                          theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300' // theme.palette.primary.main
+                      },
+                      bgcolor: theme =>
+                        theme.palette.mode === 'dark' ? 'grey.900' : 'grey.200' // theme.palette.primary.main
+                    }}
+                    onClick={() => setAlertOpen(true)}
+                  >
+                    <SvgIcon>
+                      <WhiteFlagIcon />
+                    </SvgIcon>
+                  </Button>
+                </Tooltip>
+              </>
+            ) : (
               <Button
-                sx={{ marginRight: '2px' }}
                 variant='contained'
                 color='primary'
-                onClick={offerDraw}
+                onClick={() => navigate('/')}
               >
-                🤝 offer draw
+                Back to menu
               </Button>
-              <Button
-                sx={{ marginLeft: '2px' }}
-                color='secondary'
-                variant='contained'
-                onClick={() => setAlertOpen(true)}
-              >
-                🏳️ resign
-              </Button>
-            </ButtonGroup>
-          ) : (
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={() => navigate('/')}
-            >
-              Back to menu
-            </Button>
-          )}
-        </Box>
+            )}
+          </Stack>
+        </Stack>
         <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>
-          <DialogTitle>Are you sure?</DialogTitle>
+          <DialogTitle>Sure you want to resign?</DialogTitle>
           <DialogContent>
             <DialogContentText>
               there's always hope for stalemate!
