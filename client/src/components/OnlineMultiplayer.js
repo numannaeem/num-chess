@@ -52,7 +52,7 @@ function OnlineMultiplayer ({ socket, username }) {
   )
 
   const highlightLastMove = useCallback(() => {
-    if(game.current.in_checkmate())
+    if(game.current?.in_checkmate())
       checkmateSound?.play()
     else pieceMoveSound?.play()
     const fromSquare =

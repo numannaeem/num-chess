@@ -121,24 +121,21 @@ function LocalMultiplayer () {
     if (!gameOver) {
       setPieceSquare(square)
       const validMoves = game.current.moves({ square, verbose: true })
-
-      setSquareStyles(p => {
-        const moves = {}
-        if (game.current.in_check()) {
-          moves[getPiecePosition({ type: 'k', color: game.current.turn() })] = {
-            backgroundColor: 'rgba(24,255,186,0.6)'
-          }
+      const moves = {}
+      if (game.current.in_check()) {
+        moves[getPiecePosition({ type: 'k', color: game.current.turn() })] = {
+          backgroundColor: 'rgba(24,255,186,0.6)'
         }
-        moves[validMoves[0]?.from] = { backgroundColor: 'rgba(255,255,0,0.4)' }
-        validMoves.forEach(m => {
-          moves[m.to] = {
-            background: m.captured
-              ? 'radial-gradient(circle, rgba(0,0,0,0) 48%, rgba(0,0,0,0.2) 54%, rgba(0,0,0,0.2) 66%, rgba(0,0,0,0) 71%)'
-              : 'radial-gradient(circle, rgba(0,0,0,0.2) 35%, transparent 40%)'
-          }
-        })
-        return moves
+      }
+      moves[validMoves[0]?.from] = { backgroundColor: 'rgba(255,255,0,0.4)' }
+      validMoves.forEach(m => {
+        moves[m.to] = {
+          background: m.captured
+            ? 'radial-gradient(circle, rgba(0,0,0,0) 48%, rgba(0,0,0,0.2) 54%, rgba(0,0,0,0.2) 66%, rgba(0,0,0,0) 71%)'
+            : 'radial-gradient(circle, rgba(0,0,0,0.2) 35%, transparent 40%)'
+        }
       })
+      setSquareStyles(moves)
       const move = game.current.move({
         from: pieceSquare,
         to: square,
@@ -184,10 +181,9 @@ function LocalMultiplayer () {
         bgcolor='background.paper'
         justifyContent='space-between'
         alignItems='center'
-        // gap={2}
       >
         <NavBar />
-        <Stack flexGrow={1} alignItems='center' justifyContent={'center'} >
+        <Stack flexGrow={1} alignItems='center' justifyContent={'center'}>
           <Chessboard
             undo
             calcWidth={({ screenWidth, screenHeight }) =>
