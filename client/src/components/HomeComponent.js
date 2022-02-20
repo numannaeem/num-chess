@@ -11,10 +11,12 @@ import {
   InputAdornment,
   Link,
   Slide,
+  SvgIcon,
   TextField,
   Typography
 } from '@mui/material'
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
+import { ReactComponent as Logo } from '../svgIcons/knightLogo.svg'
 import SettingsSubmenu from './SettingsSubmenu'
 
 function HomeComponent ({
@@ -71,12 +73,7 @@ function HomeComponent ({
       px={3}
       bgcolor='background.paper'
     >
-      <Stack
-        height='100%'
-        alignItems='center'
-        justifyContent='space-between'
-        // spacing={}
-      >
+      <Stack height='100%' alignItems='center' justifyContent='space-between'>
         <Fade onEntered={() => setEntered(1)} in timeout={500}>
           <Stack
             alignItems='center'
@@ -87,7 +84,10 @@ function HomeComponent ({
             mx={2}
           >
             <Typography variant={'h3'} fontWeight={600} color='primary'>
-              NumChess♙
+              NumChess 
+              <SvgIcon sx={{marginLeft: 1}} fontSize='inherit' >
+                <Logo />
+              </SvgIcon>
             </Typography>
             <Typography mt={1} variant='subtitle1' color='text.secondary'>
               {cornyLine}
@@ -162,7 +162,7 @@ function HomeComponent ({
                 variant='outlined'
                 sx={hoverStyles('"🔎"')}
               >
-                Random Game
+                Find Game
               </Button>
               <Divider />
 

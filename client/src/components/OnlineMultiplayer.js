@@ -102,7 +102,6 @@ function OnlineMultiplayer ({ socket, username }) {
           setSubtitleText('Draw by threefold repetition')
         }
       }
-      game.current.reset()
       return 'draw'
     },
     [username]
@@ -432,9 +431,9 @@ function OnlineMultiplayer ({ socket, username }) {
           </Stack>
           
           <Stack justifySelf='flex-start' direction='row' gap={2}  mb={2}>
-            {!gameOver || 1 ? (
+            {!gameOver? (
               <>
-                <Tooltip title='Offer draw' arrow>
+                <Tooltip enterTouchDelay={0} title='Offer draw' arrow>
                   <Button
                     color='grey'
                     variant='contained'

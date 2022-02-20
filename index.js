@@ -143,6 +143,17 @@ io.on('connection', socket => {
       console.log(matchmakingRooms)
     })
 
+    socket.on('un-matchmake', () => {
+      const {roomName} = socket
+      if (roomName) {
+        socket.leave(roomName)
+        io.in(roomName).emit('player-left')
+      }
+      const idx = matchmakingRooms.findIndex(r => r === roomName)
+      matchmakingRooms.splice(idx,1)
+      roomData[roomName] = null
+    })
+
     socket.on('disconnect', () => {
       const { roomName } = socket
       if (roomName) {

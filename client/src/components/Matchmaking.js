@@ -40,7 +40,9 @@ function Matchmaking ({ socket }) {
       justifyContent='space-between'
       direction='column'
     >
-      <NavBar />
+      <NavBar onClick={() => {
+        socket.emit('un-matchmake')
+      }} />
       <Stack flexGrow={1} px={3} spacing={2} alignItems='center' justifyContent='center'>
         <Typography color='primary' variant='h6' textAlign='center'>
           searching for an opponent
