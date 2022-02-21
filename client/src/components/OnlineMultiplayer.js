@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  LinearProgress,
   Stack,
   SvgIcon,
   Tooltip,
@@ -49,6 +50,8 @@ function OnlineMultiplayer ({ socket, username }) {
   const [drawSnackbarOpen, setDrawSnackbarOpen] = useState(false)
   const [rematchSnackbarOpen, setRematchSnackbarOpen] = useState(false)
   const [backdropOpen, setBackdropOpen] = useState(false)
+  const [yourTimer, setYourTimer] = useState(location.state?.time)
+  const [oppTimer, setOppTimer] = useState(location.state?.time)
   const [yourTurn, setYourTurn] = useState(
     location.state?.white?.id === socket?.id
     // location.state.white contains the data of white player, sent over from WaitingRoom
@@ -88,6 +91,7 @@ function OnlineMultiplayer ({ socket, username }) {
     move => {
       setGameOver(true)
       setOverModalOpen(true)
+      checkmateSound?.play()
       if (move) {
         if (game.current.in_checkmate()) {
           setSubtitleText(
@@ -122,8 +126,7 @@ function OnlineMultiplayer ({ socket, username }) {
 
   // useEffect to highlight last move
   useEffect(() => {
-    if (game.current?.in_checkmate()) checkmateSound?.play()
-    else pieceMoveSound?.play()
+    if (!game.current?.in_checkmate()) pieceMoveSound?.play()
     setSquareStyles(highlightLastMove())
   }, [gameHistory, highlightLastMove])
 
@@ -137,12 +140,34 @@ function OnlineMultiplayer ({ socket, username }) {
       if (data.nextPlayer.id === socket.id) {
         setYourTurn(true)
       }
+      if (username === white.username) {
+        setYourTimer(data.timeLeft.white)
+        setOppTimer(data.timeLeft.black)
+      } else {
+        setYourTimer(data.timeLeft.black)
+        setOppTimer(data.timeLeft.white)
+      }
+    })
+
+    socket?.on('game-finished', () => {
+      //game finished i.e the player disconnected and game finished while he was gone
+      setGameWinner('Nobody')
+      setSubtitleText('Your connection timed out :/')
+      finishGame()
     })
 
     socket?.on('game-over', data => {
       if (data.timedOut) {
-        setGameWinner(white.id === socket.id ? black.username : white.username)
-        setSubtitleText('Your connection timed out :/')
+        setGameWinner(data.winner)
+        const subText = `${
+          data.winner === black.username ? 'White' : 'Black'
+        } ran out of time`
+        if (data.winner === username) {
+          setOppTimer(0)
+        } else {
+          setYourTimer(0)
+        }
+        setSubtitleText(subText)
         finishGame()
         return
       }
@@ -186,6 +211,13 @@ function OnlineMultiplayer ({ socket, username }) {
       setWhite(data.players.find(p => p.color === 'white'))
       setBlack(data.players.find(p => p.color === 'black'))
       setBackdropOpen(false)
+      if (username === white.username) {
+        setYourTimer(data.timeLeft.white)
+        setOppTimer(data.timeLeft.black)
+      } else {
+        setYourTimer(data.timeLeft.black)
+        setOppTimer(data.timeLeft.white)
+      }
     })
   }, [socket, username, finishGame, gameOver, black, white])
 
@@ -201,11 +233,13 @@ function OnlineMultiplayer ({ socket, username }) {
       setGameOver(false)
       setRematchSnackbarOpen(false)
       setSubtitleText('')
+      setYourTimer(location.state?.time)
+      setOppTimer(location.state?.time)
       setFen('start')
       game.current = new Chess()
       setGameHistory([])
     })
-  }, [socket])
+  }, [socket, location])
 
   // initial game.current useEffect
   useEffect(() => {
@@ -213,6 +247,26 @@ function OnlineMultiplayer ({ socket, username }) {
       game.current = new Chess()
     }
   }, [])
+
+  useEffect(() => {
+    const intervalFn = setInterval(() => {
+      if (backdropOpen || gameOver) return
+      if (yourTurn) setYourTimer(p => p - 1)
+      else if (!yourTurn) setOppTimer(p => p - 1)
+    }, 1000)
+    return () => clearInterval(intervalFn)
+  }, [yourTurn, backdropOpen, gameOver])
+
+  useEffect(() => {
+    if (oppTimer <= 0) {
+      socket.emit('timed-out', username) //person who won
+    } else if (yourTimer <= 0) {
+      socket.emit(
+        'timed-out',
+        white.username === username ? black.username : white.username
+      ) //HANDLE
+    }
+  }, [yourTimer, oppTimer, socket, white, black, username])
 
   const getPiecePosition = piece => {
     return []
@@ -250,10 +304,18 @@ function OnlineMultiplayer ({ socket, username }) {
       gameWinner = finishGame(move)
       setGameWinner(gameWinner)
     }
-    socket.emit('played', game.current.fen(), gameWinner, {
-      from: sourceSquare,
-      to: targetSquare,
-      promotion: 'q'
+    socket.emit('played', {
+      fen: game.current.fen(),
+      result: gameWinner,
+      move: {
+        from: sourceSquare,
+        to: targetSquare,
+        promotion: 'q'
+      },
+      timeLeft: {
+        white: username === white.username ? yourTimer : oppTimer,
+        black: username === black.username ? yourTimer : oppTimer
+      }
     })
     setYourTurn(false)
   }
@@ -291,10 +353,18 @@ function OnlineMultiplayer ({ socket, username }) {
         setGameWinner(gameWinner)
       }
 
-      socket.emit('played', game.current.fen(), gameWinner, {
-        from: pieceSquare,
-        to: square,
-        promotion: 'q' // always promote to a queen
+      socket.emit('played', {
+        fen: game.current.fen(),
+        result: gameWinner,
+        move: {
+          from: pieceSquare,
+          to: square,
+          promotion: 'q'
+        },
+        timeLeft: {
+          white: username === white.username ? yourTimer : oppTimer,
+          black: username === black.username ? yourTimer : oppTimer
+        }
       })
 
       setYourTurn(false)
@@ -368,7 +438,12 @@ function OnlineMultiplayer ({ socket, username }) {
             navigate('/')
           }}
         />
-        <Stack flexGrow={1} justifyContent='center' alignItems='center'>
+        <Stack
+          flexGrow={1}
+          width='fill-available'
+          justifyContent='center'
+          alignItems='center'
+        >
           <Stack
             width='fill-available'
             py={3}
@@ -384,11 +459,21 @@ function OnlineMultiplayer ({ socket, username }) {
               fontSize={{ xs: '1.5rem', md: '3rem' }}
               alignSelf='start'
               color='text.primary'
-              textAlign={{ xs: 'center', md: 'end' }}
+              textAlign={'end'}
               mr={{ xs: 0, md: 3 }}
               mb={{ xs: 1, md: 0 }}
               width='fill-available'
             >
+              <span style={{ fontSize: '80%' }}>
+                {Math.floor(oppTimer / 60) +
+                  ':' +
+                  `${oppTimer % 60 < 10 ? '0' : ''}${oppTimer % 60}`}
+              </span>
+              <LinearProgress
+                disabled={yourTurn}
+                variant={'determinate'}
+                value={oppTimer * (100 / location.state?.time)}
+              />
               {white.username === username ? black.username : white.username}
             </Typography>
             <Chessboard
@@ -424,28 +509,38 @@ function OnlineMultiplayer ({ socket, username }) {
               color='text.primary'
               ml={{ xs: 0, md: 3 }}
               mt={{ xs: 1, md: 0 }}
-              textAlign={{ xs: 'center', md: 'start' }}
+              textAlign={{ md: 'start' }}
             >
               {black.username === username ? black.username : white.username}
+              <LinearProgress
+                disabled={!yourTurn}
+                variant={'determinate'}
+                value={yourTimer * (100 / location.state?.time)}
+              />
+              <span style={{ fontSize: '80%' }}>
+                {Math.floor(yourTimer / 60) +
+                  ':' +
+                  `${yourTimer % 60 < 10 ? '0' : ''}${yourTimer % 60}`}
+              </span>
             </Typography>
           </Stack>
-          
-          <Stack justifySelf='flex-start' direction='row' gap={2}  mb={2}>
-            {!gameOver? (
+          <Stack justifySelf='flex-start' direction='row' gap={2} mb={2}>
+            {!gameOver ? (
               <>
                 <Tooltip enterTouchDelay={0} title='Offer draw' arrow>
                   <Button
-                    color='grey'
                     variant='contained'
                     size='large'
                     onClick={offerDraw}
                     sx={{
                       ':hover': {
                         bgcolor: theme =>
-                          theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300' // theme.palette.primary.main
+                          theme.palette.mode === 'dark'
+                            ? 'grey.800'
+                            : 'grey.200' // theme.palette.primary.main
                       },
                       bgcolor: theme =>
-                        theme.palette.mode === 'dark' ? 'grey.900' : 'grey.200' // theme.palette.primary.main
+                        theme.palette.mode === 'dark' ? 'grey.900' : 'grey.100' // theme.palette.primary.main
                     }}
                   >
                     <SvgIcon inheritViewBox>
@@ -455,16 +550,17 @@ function OnlineMultiplayer ({ socket, username }) {
                 </Tooltip>
                 <Tooltip title='Resign' arrow>
                   <Button
-                    color='grey'
                     variant='contained'
                     size='large'
                     sx={{
                       ':hover': {
                         bgcolor: theme =>
-                          theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300' // theme.palette.primary.main
+                          theme.palette.mode === 'dark'
+                            ? 'grey.800'
+                            : 'grey.200' // theme.palette.primary.main
                       },
                       bgcolor: theme =>
-                        theme.palette.mode === 'dark' ? 'grey.900' : 'grey.200' // theme.palette.primary.main
+                        theme.palette.mode === 'dark' ? 'grey.900' : 'grey.100' // theme.palette.primary.main
                     }}
                     onClick={() => setAlertOpen(true)}
                   >
@@ -476,7 +572,7 @@ function OnlineMultiplayer ({ socket, username }) {
               </>
             ) : (
               <Button
-                variant='contained'
+                variant='outlined'
                 color='primary'
                 onClick={() => navigate('/')}
               >

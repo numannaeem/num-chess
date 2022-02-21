@@ -88,7 +88,7 @@ function SettingsSubmenu ({
           })
         }}
       >
-        Toggle theme: {theme === 'light' ? '🏙️' : '🌃'}
+        Toggle theme: {theme === 'light' ? '☀️' : '🌙'}
       </Button>
       <TextField
         onKeyDown={e => e.key === 'Enter' && handleSubmit()}

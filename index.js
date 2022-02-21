@@ -8,11 +8,17 @@ const io = new Server(server)
 const { addToRoom } = require('./serverUtils')
 
 app.use((req, res, next) => {
-  if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') { res.redirect(`https://${req.header('host')}${req.url}`) } else next()
+  if (
+    process.env.NODE_ENV === 'production' &&
+    req.header('x-forwarded-proto') !== 'https'
+  ) {
+    res.redirect(`https://${req.header('host')}${req.url}`)
+  } else next()
 })
 app.use(express.json()) // used to parse json requests
 app.use(express.static(path.resolve(__dirname, './client/build')))
 
+const gameTime = 600
 const roomData = {}
 const matchmakingRooms = []
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
@@ -25,25 +31,27 @@ io.on('connection', socket => {
       addToRoom(io, socket, roomData, roomName, username)
     )
 
-    socket.on('played', async (fen, result, move) => {
+    socket.on('played', async data => {
       try {
         const { roomName } = socket
         const index = roomData[roomName].players.findIndex(
           i => i.id === roomData[roomName].currentPlayer.id
         )
         roomData[roomName].currentPlayer = roomData[roomName].players[+!index]
-        if (result) {
-          const winner = result
+        roomData[roomName].timeLeft = data.timeLeft
+        if (data.result) {
+          const winner = data.result
           // last player to play must've been the winner
           io.to(roomData[roomName].currentPlayer.id).emit('game-over', {
             winner,
-            move
+            move: data.move
           })
         } else {
-          roomData[roomName].fen = fen
+          roomData[roomName].fen = data.fen
           io.to(roomData[roomName].currentPlayer.id).emit('next-turn', {
             nextPlayer: roomData[roomName].currentPlayer,
-            move
+            move: data.move,
+            timeLeft: data.timeLeft
           })
         }
       } catch (error) {
@@ -72,31 +80,20 @@ io.on('connection', socket => {
       roomData[roomName].fen = null
       roomData[roomName].players[rand].color = 'white' // first player becomes white
       roomData[roomName].players[+!rand].color = 'black'
+      roomData[roomName].timeLeft = {
+        white: gameTime,
+        black: gameTime
+      }
       roomData[roomName].currentPlayer = roomData[roomName].players[rand]
       io.in(roomName).emit('rematch-accepted', {
         white: roomData[roomName].currentPlayer,
-        black: roomData[roomName].players[+!rand],
-        roomName
+        black: roomData[roomName].players[+!rand]
       })
     })
 
     socket.on('resign', socketIdWhichWon => {
       io.to(socketIdWhichWon).emit('opponent-resigned')
     })
-    // socket.on('restart-game', () => {
-    //   roomData[roomName].restartCount++
-    //   if (roomData[roomName].restartCount === 2) {
-    //     const rand = Math.round(Math.random())
-    //     roomData[roomName].gameState = Array(9).fill('')
-    //     roomData[roomName].restartCount = 0
-    //     roomData[roomName].currentPlayer = roomData[roomName].players[rand]
-
-    //     io.in(roomName).emit('init-game', {
-    //       x: roomData[roomName].currentPlayer,
-    //       o: roomData[roomName].players[+!rand]
-    //     })
-    //   }
-    // })
 
     socket.on('reconnect-to-room', roomName => {
       if (
@@ -116,11 +113,24 @@ io.on('connection', socket => {
           if (roomData[roomName].currentPlayer.username === username) {
             roomData[roomName].currentPlayer.id = socket.id
           }
-          io.in(roomName).emit('update-data', roomData[roomName])
+          io.in(roomName).emit('update-data', {
+            ...roomData[roomName],
+            timeLeft: {
+              ...roomData[roomName].timeLeft,
+              [playerData.color]: roomData[roomName].timeLeft[playerData.color] - 40
+            }
+          })
         }
       } else {
-        socket.emit('game-over', { timedOut: true })
+        socket.emit('game-finished')
       }
+    })
+
+    socket.on('timed-out', winner => {
+      io.in(socket.roomName).emit('game-over', {
+        winner,
+        timedOut: true
+      })
     })
 
     socket.on('matchmake', () => {
@@ -144,14 +154,14 @@ io.on('connection', socket => {
     })
 
     socket.on('un-matchmake', () => {
-      const {roomName} = socket
+      const { roomName } = socket
       if (roomName) {
         socket.leave(roomName)
         io.in(roomName).emit('player-left')
+        const idx = matchmakingRooms.findIndex(r => r === roomName)
+        matchmakingRooms.splice(idx, 1)
+        roomData[roomName] = null
       }
-      const idx = matchmakingRooms.findIndex(r => r === roomName)
-      matchmakingRooms.splice(idx,1)
-      roomData[roomName] = null
     })
 
     socket.on('disconnect', () => {

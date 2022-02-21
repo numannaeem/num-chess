@@ -38,6 +38,22 @@ function App () {
     typography: {
       fontFamily: 'JetBrains Mono, monospace'
     },
+    components: {
+      MuiLinearProgress: {
+        styleOverrides: {
+          root: ({ ownerState, theme }) => ({
+            ...(ownerState.disabled && {
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[500],
+            }),
+          }),
+          bar: ({ ownerState, theme }) => ({
+            ...(ownerState.disabled && {
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[800],
+            }),
+          }),
+        },
+      },
+    },
   })
 
   useEffect(() => {

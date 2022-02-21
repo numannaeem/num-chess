@@ -7,16 +7,6 @@ import {
 import NavBar from './NavBar'
 
 function Matchmaking ({ socket }) {
-  // const Loader = () => {
-  //   const loaders = [
-  //     <FlagSpinner size={40} color='#90caf9' loading />,
-  //     <CubeSpinner size={30} frontColor='#90caf9' />,
-  //     <PongSpinner size={80} color='#90caf9' />,
-  //     <DominoSpinner size={100} color='#90caf9' />,
-  //     <GuardSpinner size={50} backColor="#777" frontColor='#90caf9' />
-  //   ]
-  //   return loaders[Math.floor(Math.random() * loaders.length)]
-  // }
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -42,6 +32,7 @@ function Matchmaking ({ socket }) {
     >
       <NavBar onClick={() => {
         socket.emit('un-matchmake')
+        navigate('/')
       }} />
       <Stack flexGrow={1} px={3} spacing={2} alignItems='center' justifyContent='center'>
         <Typography color='primary' variant='h6' textAlign='center'>

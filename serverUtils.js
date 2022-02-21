@@ -1,5 +1,12 @@
+const gameTime = 600
+
 const addToRoom = (io, socket, roomData, roomName, username) => {
   const roomSize = roomData[roomName]?.players.length || 0
+  if(socket.roomName) {
+    socket.leave(roomName)
+    if(roomData[roomName]?.activePlayers)
+    roomData[roomName].activePlayers = roomData[roomName].activePlayers-1
+  }
   if (roomSize === 0) {
     socket.join(roomName)
     socket.roomName = roomName
@@ -8,11 +15,15 @@ const addToRoom = (io, socket, roomData, roomName, username) => {
       fen: null,
       players: [],
       currentPlayer: null,
-      activePlayers: 1
+      activePlayers: 1,
+      timeLeft: {
+        white: gameTime,
+        black: gameTime
+      }
     }
     roomData[roomName].players.push({ id: socket.id, username })
   } else if (roomSize === 1) {
-    if (roomData[roomName].players[0].username === username) {
+    if (roomData[roomName].players[0].username === username) { //if same username player joins the room
       return
     }
     socket.join(roomName)
@@ -26,7 +37,8 @@ const addToRoom = (io, socket, roomData, roomName, username) => {
     io.in(roomName).emit('init-game', {
       white: roomData[roomName].currentPlayer,
       black: roomData[roomName].players[+!rand],
-      roomName
+      roomName,
+      time: gameTime
     })
   }
 }
