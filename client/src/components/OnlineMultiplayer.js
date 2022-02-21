@@ -24,7 +24,7 @@ import RematchSnackbar from './RematchSnackbar'
 import { ReactComponent as HandshakeIcon } from '../svgIcons/handshake.svg'
 import { ReactComponent as WhiteFlagIcon } from '../svgIcons/whiteFlag.svg'
 
-const checkmateSound = new Audio('/sounds/victoryBell.wav')
+const checkmateSound = new Audio('/sounds/victoryBell.mp3')
 const pieceMoveSound = new Audio('/sounds/pieceMove.wav')
 
 function OnlineMultiplayer ({ socket, username }) {
