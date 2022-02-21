@@ -113,13 +113,8 @@ io.on('connection', socket => {
           if (roomData[roomName].currentPlayer.username === username) {
             roomData[roomName].currentPlayer.id = socket.id
           }
-          io.in(roomName).emit('update-data', {
-            ...roomData[roomName],
-            timeLeft: {
-              ...roomData[roomName].timeLeft,
-              [playerData.color]: roomData[roomName].timeLeft[playerData.color] - 40
-            }
-          })
+          roomData[roomName].timeLeft[playerData.color] -= 40 //40 second penalty on disconnect
+          io.in(roomName).emit('update-data', roomData[roomName])
         }
       } else {
         socket.emit('game-finished')

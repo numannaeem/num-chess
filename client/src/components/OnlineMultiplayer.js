@@ -12,7 +12,8 @@ import {
   Stack,
   SvgIcon,
   Tooltip,
-  Typography
+  Typography,
+  useMediaQuery
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import GameOverModal from './GameOverModal'
@@ -27,6 +28,8 @@ const checkmateSound = new Audio('/sounds/victoryBell.wav')
 const pieceMoveSound = new Audio('/sounds/pieceMove.wav')
 
 function OnlineMultiplayer ({ socket, username }) {
+  const isMobile = useMediaQuery(theme => theme.breakpoints.down('md'))
+
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -461,20 +464,31 @@ function OnlineMultiplayer ({ socket, username }) {
               color='text.primary'
               textAlign={'end'}
               mr={{ xs: 0, md: 3 }}
-              mb={{ xs: 1, md: 0 }}
+              mb={{ xs: 2, md: 0 }}
               width='fill-available'
             >
-              <span style={{ fontSize: '80%' }}>
+              <span style={{ fontSize: '80%', fontWeight: '200' }}>
                 {Math.floor(oppTimer / 60) +
                   ':' +
                   `${oppTimer % 60 < 10 ? '0' : ''}${oppTimer % 60}`}
+                {isMobile && ' | '}
               </span>
+              {isMobile
+                ? white.username === username
+                  ? black.username
+                  : white.username
+                : null}
               <LinearProgress
+                sx={{ mt: isMobile ? 1 : 0 }}
                 disabled={yourTurn}
                 variant={'determinate'}
                 value={oppTimer * (100 / location.state?.time)}
               />
-              {white.username === username ? black.username : white.username}
+              {!isMobile
+                ? white.username === username
+                  ? black.username
+                  : white.username
+                : null}
             </Typography>
             <Chessboard
               orientation={black.id === socket.id ? 'black' : 'white'}
@@ -508,16 +522,27 @@ function OnlineMultiplayer ({ socket, username }) {
               alignSelf='end'
               color='text.primary'
               ml={{ xs: 0, md: 3 }}
-              mt={{ xs: 1, md: 0 }}
+              mt={{ xs: 2, md: 0 }}
               textAlign={{ md: 'start' }}
             >
-              {black.username === username ? black.username : white.username}
+              {!isMobile
+                ? black.username === username
+                  ? black.username
+                  : white.username
+                : null}
               <LinearProgress
+                sx={{ mb: isMobile ? 1 : 0 }}
                 disabled={!yourTurn}
                 variant={'determinate'}
                 value={yourTimer * (100 / location.state?.time)}
               />
-              <span style={{ fontSize: '80%' }}>
+              {isMobile
+                ? black.username === username
+                  ? black.username
+                  : white.username
+                : null}
+              <span style={{ fontSize: '80%', fontWeight: '200' }}>
+                {isMobile && ' | '}
                 {Math.floor(yourTimer / 60) +
                   ':' +
                   `${yourTimer % 60 < 10 ? '0' : ''}${yourTimer % 60}`}
