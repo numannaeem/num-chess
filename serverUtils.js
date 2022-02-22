@@ -42,7 +42,6 @@ const addToRoom = (io, socket, roomData, roomName, username) => {
     }
   }
   const roomSize = roomData[roomName]?.players.length || 0
-  console.log(roomName);
   if (roomSize === 1) {
     if (roomData[roomName].players[0].username === username) {
       //if same username player joins the room
