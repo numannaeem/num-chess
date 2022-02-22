@@ -414,7 +414,7 @@ function OnlineMultiplayer ({ socket, username }) {
       <PlayerLeftModal
         onTimeout={handleOpponentTimedOut}
         setBackdropOpen={setBackdropOpen}
-        backdropOpen={backdropOpen}
+        backdropOpen={!gameOver && backdropOpen}
       />
       <GameOverModal
         winner={gameWinner}
