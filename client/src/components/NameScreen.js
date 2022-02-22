@@ -27,13 +27,13 @@ function NameScreen ({ setOuterUsername, toast }) {
     setOuterUsername(username)
     window.localStorage.setItem('username', username)
     toast.success('Username set!', {
-      position: 'bottom-right',
-      autoClose: 2000,
+      position: 'top-right',
+      autoClose: 1500,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: false,
       draggable: true,
-      theme: 'dark'
+      theme: 'colored'
     })
   }
   return (

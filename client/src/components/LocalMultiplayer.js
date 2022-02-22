@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Chessboard from 'chessboardjsx'
 import Chess from 'chess.js'
 import {
@@ -13,6 +13,9 @@ import {
 } from '@mui/material'
 import GameOverModal from './GameOverModal'
 import NavBar from './NavBar'
+
+const checkmateSound = new Audio('/sounds/victoryBell.mp3')
+const pieceMoveSound = new Audio('/sounds/pieceMove.wav')
 
 function LocalMultiplayer () {
   const [fen, setFen] = useState('start')
@@ -37,9 +40,46 @@ function LocalMultiplayer () {
     setAlertOpen(false)
   }
 
-  const finishGame = move => {
+  const highlightLastMove = useCallback(() => {
+    const fromSquare =
+      gameHistory.length && gameHistory[gameHistory.length - 1].from
+    const toSquare =
+      gameHistory.length && gameHistory[gameHistory.length - 1].to
+    return {
+      ...(gameHistory.length && {
+        [fromSquare]: {
+          backgroundColor: 'rgba(255, 255, 0, 0.4)'
+        }
+      }),
+      ...(gameHistory.length && {
+        [toSquare]: {
+          backgroundColor: 'rgba(255, 255, 0, 0.4)'
+        }
+      }),
+      ...(game.current?.in_checkmate()
+        ? {
+            [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
+              backgroundColor: '#f02e32'
+            }
+          }
+        : game.current?.in_check() && {
+            [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
+              backgroundColor: 'rgba(24,255,186,0.5)'
+            }
+          })
+    }
+  }, [gameHistory])
+
+  useEffect(() => {
+    if (!game.current?.in_checkmate()) pieceMoveSound?.play()
+    setSquareStyles(highlightLastMove())
+  }, [gameHistory, highlightLastMove])
+  
+
+  const finishGame = useCallback(move => {
     setGameOver(true)
     if (game.current.in_checkmate()) {
+      checkmateSound?.play()
       const kingPosition = getPiecePosition({
         type: 'k',
         color: move.color === 'w' ? 'b' : 'w'
@@ -59,7 +99,7 @@ function LocalMultiplayer () {
       setSubtitleText('Draw by insufficient material/threefold repetition')
     }
     setOverModalOpen(true)
-  }
+  }, [])
 
   const getPiecePosition = piece => {
     return []
@@ -211,13 +251,13 @@ function LocalMultiplayer () {
           <ButtonGroup sx={{ marginBlock: '8px' }}>
             {!gameOver && (
               <Button
-                sx={{ marginRight: '2px' }}
+                // sx={{ marginRight: '2px' }}
                 disabled={gameHistory.length === 0}
-                variant='contained'
+                variant='outlined'
                 color='primary'
                 onClick={() => {
                   game.current.undo()
-                  setSquareStyles([])
+                  setSquareStyles({})
                   setGameHistory(game.current.history({ verbose: true }))
                   setFen(game.current.fen())
                 }}
@@ -226,10 +266,10 @@ function LocalMultiplayer () {
               </Button>
             )}
             <Button
-              sx={{ marginLeft: '2px' }}
+              // sx={{ marginLeft: '2px' }}
               disabled={gameHistory.length === 0}
               color='secondary'
-              variant='contained'
+              variant='outlined'
               onClick={() => (!gameOver ? setAlertOpen(true) : restartGame())}
             >
               restart game

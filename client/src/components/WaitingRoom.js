@@ -5,22 +5,13 @@ import { DominoSpinner } from 'react-spinners-kit'
 import Navbar from './NavBar'
 
 function WaitingRoom ({ socket }) {
-  // const Loader = () => {
-  //   const loaders = [
-  //     <FlagSpinner size={40} color='#90caf9' loading />,
-  //     <CubeSpinner size={30} frontColor='#90caf9' />,
-  //     <PongSpinner size={80} color='#90caf9' />,
-  //     <DominoSpinner size={100} color='#90caf9' />,
-  //     <SpiralSpinner size={50} frontColor='#90caf9' />,
-  //     <GuardSpinner size={50} frontColor='#90caf9' />
-  //   ]
-  //   return loaders[Math.floor(Math.random() * loaders.length)]
-  // }
+
   const location = useLocation()
   const navigate = useNavigate()
   const enteredRoomName = location.state?.roomName || ''
   const [roomName, setRoomName] = useState(enteredRoomName)
   const [copied, setCopied] = useState(false)
+  const [invalidRoomName, setInvalidRoomName] = useState(false)
 
   useEffect(() => {
     if (!enteredRoomName) {
@@ -37,15 +28,18 @@ function WaitingRoom ({ socket }) {
 
   // join room useEffect
   useEffect(() => {
-    if (roomName) socket.emit('join-room', roomName)
-  }, [socket, roomName])
+    if (enteredRoomName) socket.emit('join-room', enteredRoomName)
+    else if (roomName) socket.emit('create-room', roomName)
+  }, [enteredRoomName, socket, roomName])
 
   useEffect(() => {
-    socket &&
-      socket.on('init-game', data => {
+      socket?.on('init-game', data => {
         navigate('/online-multiplayer', {
           state: data
         })
+      })
+      socket?.on('invalid-room-name', () => {
+        setInvalidRoomName(true)
       })
   }, [socket, navigate, roomName])
 
@@ -64,38 +58,48 @@ function WaitingRoom ({ socket }) {
         alignItems='center'
         justifyContent='center'
       >
-        <Tooltip
-          title={copied ? 'Copied!' : 'Click to copy!'}
-          placement='top'
-          arrow
-        >
-          <Box
-            border='2px solid'
-            borderColor='secondary.main'
-            borderRadius={1}
-            sx={{
-              cursor: 'pointer',
-              transition: 'all 200ms',
-              '&:hover': {
-                transform: 'scale(1.1)'
-              }
-            }}
-            px={3}
-            py={2}
-            onClick={() => {
-              setCopied(true)
-              navigator.clipboard?.writeText(roomName)
-            }}
+        {!invalidRoomName ? <>
+          <Tooltip
+            title={copied ? 'Copied!' : 'Click to copy!'}
+            placement='top'
+            arrow
           >
-            <Typography color='secondary.main' variant='h4' textAlign='center'>
-              Room ID: {roomName}
+            <Box
+              border='2px solid'
+              borderColor='secondary.main'
+              borderRadius={1}
+              sx={{
+                cursor: 'pointer',
+                transition: 'all 200ms',
+                '&:hover': {
+                  transform: 'scale(1.1)'
+                }
+              }}
+              px={3}
+              py={2}
+              onClick={() => {
+                setCopied(true)
+                navigator.clipboard?.writeText(roomName)
+              }}
+            >
+              <Typography color='secondary.main' variant='h4' textAlign='center'>
+                Room ID: {roomName}
+              </Typography>
+            </Box>
+          </Tooltip>
+          <Typography color='primary' variant='subtitle1' textAlign='center'>
+            waiting for your opponent
+          </Typography>
+          <DominoSpinner size={100} color='#90caf9' />
+        </> : 
+        <>
+        <Typography color='error' variant='subtitle1' textAlign='center'>
+            invalid room name entered!
             </Typography>
-          </Box>
-        </Tooltip>
-        <Typography color='primary' variant='subtitle1' textAlign='center'>
-          waiting for your opponent
-        </Typography>
-        <DominoSpinner size={100} color='#90caf9' />
+            <Typography variant='subtitle1' textAlign='center' color='grey.600'>
+            go back to menu and re-enter the room name, maybe?
+          </Typography>
+        </>}
       </Stack>
     </Stack>
   )

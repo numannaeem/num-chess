@@ -34,13 +34,13 @@ function SettingsSubmenu ({
       return
     }
     toast.success('Username set!', {
-      position: 'bottom-right',
-      autoClose: 2000,
+      position: 'top-right',
+      autoClose: 1500,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: false,
       draggable: true,
-      theme: theme || 'dark'
+      theme: 'colored'
     })
     setError('')
     setUsername(innerUsername)

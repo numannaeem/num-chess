@@ -36,10 +36,9 @@ function GameOverModal ({
     fullWidth
       maxWidth={'xs'}
       open={isOpen}
-      onClose={onClose}
-      // onClose={(event, reason) => {
-      //   if (reason && reason !== 'backdropClick') onClose()
-      // }}
+      onClose={(event, reason) => {
+        if (reason && reason !== 'backdropClick') onClose()
+      }}
     >
       <DialogTitle>
         <Box display='flex' alignItems='center'>

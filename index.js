@@ -5,7 +5,7 @@ const server = http.createServer(app)
 const path = require('path')
 const { Server } = require('socket.io')
 const io = new Server(server)
-const { addToRoom } = require('./serverUtils')
+const { addToRoom, createRoom } = require('./serverUtils')
 
 app.use((req, res, next) => {
   if (
@@ -23,10 +23,13 @@ const roomData = {}
 const matchmakingRooms = []
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
-io.on('connection', socket => {
+io.on('connection', async socket => {
   try {
     const { username } = socket.handshake.query
     console.log(username + ' (' + socket.id + ') connected')
+    socket.on('create-room', roomName =>
+      createRoom(socket, roomData, roomName, username)
+    )
     socket.on('join-room', roomName =>
       addToRoom(io, socket, roomData, roomName, username)
     )
@@ -129,10 +132,6 @@ io.on('connection', socket => {
     })
 
     socket.on('matchmake', () => {
-      if (socket.roomName) {
-        socket.leave(socket.roomName)
-        io.in(socket.roomName).emit('player-left')
-      }
       if (matchmakingRooms.length === 0) {
         let temp = ''
         for (let i = 0; i < 6; i++) {
@@ -140,7 +139,7 @@ io.on('connection', socket => {
           temp = temp + ch
         }
         matchmakingRooms.push(temp)
-        addToRoom(io, socket, roomData, temp, username)
+        createRoom(socket, roomData, temp, username)
       } else {
         const roomName = matchmakingRooms.shift()
         addToRoom(io, socket, roomData, roomName, username)
@@ -163,9 +162,11 @@ io.on('connection', socket => {
       const { roomName } = socket
       if (roomName) {
         io.in(roomName).emit('player-left')
-        roomData[roomName].activePlayers--
-        if (roomData[roomName].activePlayers === 0) {
-          roomData[roomName] = null
+        if(roomData[roomName]) {
+          roomData[roomName].activePlayers--
+          if (roomData[roomName].activePlayers <= 0) {
+            roomData[roomName] = null
+          }
         }
       }
       console.log(`${socket.id} disconnected`)

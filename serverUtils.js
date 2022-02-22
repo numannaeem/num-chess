@@ -1,14 +1,17 @@
 const gameTime = 600
 
-const addToRoom = (io, socket, roomData, roomName, username) => {
-  const roomSize = roomData[roomName]?.players.length || 0
+const createRoom = (socket, roomData, roomName, username) => {
   if (socket.roomName) {
-    socket.leave(roomName)
-    roomData[roomName].activePlayers--
-    if (roomData[roomName].activePlayers === 0) {
-      roomData[roomName] = null
+    const prevRoom = socket.roomName
+    socket.leave(prevRoom)
+    if (roomData[prevRoom]) {
+      roomData[prevRoom].activePlayers--
+      if (roomData[prevRoom].activePlayers <= 0) {
+        roomData[prevRoom] = null
+      }
     }
   }
+  const roomSize = roomData[roomName]?.players.length || 0
   if (roomSize === 0) {
     socket.join(roomName)
     socket.roomName = roomName
@@ -24,12 +27,29 @@ const addToRoom = (io, socket, roomData, roomName, username) => {
       }
     }
     roomData[roomName].players.push({ id: socket.id, username })
-  } else if (roomSize === 1) {
+  }
+}
+
+const addToRoom = (io, socket, roomData, roomName, username) => {
+  if (socket.roomName) {
+    const prevRoom = socket.roomName
+    socket.leave(prevRoom)
+    if (roomData[prevRoom]) {
+      roomData[prevRoom].activePlayers--
+      if (roomData[prevRoom].activePlayers <= 0) {
+        roomData[prevRoom] = null
+      }
+    }
+  }
+  const roomSize = roomData[roomName]?.players.length || 0
+  console.log(roomName);
+  if (roomSize === 1) {
     if (roomData[roomName].players[0].username === username) {
       //if same username player joins the room
       return
     }
     socket.join(roomName)
+    console.log(`${username} joined room - ${roomName}`)
     socket.roomName = roomName
     roomData[roomName].players.push({ id: socket.id, username })
     const rand = Math.round(Math.random())
@@ -43,7 +63,9 @@ const addToRoom = (io, socket, roomData, roomName, username) => {
       roomName,
       time: gameTime
     })
+  } else {
+    socket.emit('invalid-room-name')
   }
 }
 
-module.exports = { addToRoom }
+module.exports = { addToRoom, createRoom }

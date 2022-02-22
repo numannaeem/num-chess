@@ -46,15 +46,6 @@ function HomeComponent ({
   const navigate = useNavigate()
   const handleSubmit = () => {
     if (roomName.length === 6) {
-      // setInputLoading(true)
-      // e.preventDefault()
-      // const res = await fetch(baseUrl+'/checkRoom/'+roomName)
-      // if(res.ok) {
-      //   navigate('room/' + roomName)
-      // } else {
-      //   setError(true)
-      // }
-      // setInputLoading(false)
       navigate('room', {
         state: {
           roomName
@@ -85,7 +76,7 @@ function HomeComponent ({
           >
             <Typography variant={'h3'} fontWeight={600} color='primary'>
               NumChess 
-              <SvgIcon sx={{marginLeft: 1, filter: 'drop-shadow(0px 0px 1px rgba(0, 0, 0, .7))'}} fontSize='inherit' >
+              <SvgIcon className='logo' sx={{marginLeft: 1, filter: 'drop-shadow(1px 1px 1px rgba(0, 0, 0, .7))'}} fontSize='inherit' >
                 <Logo />
               </SvgIcon>
             </Typography>
