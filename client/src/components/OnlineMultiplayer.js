@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Chessboard from 'chessboardjsx'
 import Chess from 'chess.js'
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -23,6 +24,7 @@ import DrawSnackbar from './DrawSnackbar'
 import RematchSnackbar from './RematchSnackbar'
 import { ReactComponent as HandshakeIcon } from '../svgIcons/handshake.svg'
 import { ReactComponent as WhiteFlagIcon } from '../svgIcons/whiteFlag.svg'
+import CapturedPieces from './CapturedPieces'
 
 const checkmateSound = new Audio('/sounds/victoryBell.mp3')
 const pieceMoveSound = new Audio('/sounds/pieceMove.wav')
@@ -211,6 +213,7 @@ function OnlineMultiplayer ({ socket, username }) {
         game.current.load(data.fen)
       } else game.current = new Chess()
       setFen(game.current.fen())
+      setGameHistory(game.current.history({ verbose: true }))
       setWhite(data.players.find(p => p.color === 'white'))
       setBlack(data.players.find(p => p.color === 'black'))
       setBackdropOpen(false)
@@ -418,7 +421,7 @@ function OnlineMultiplayer ({ socket, username }) {
       />
       <GameOverModal
         winner={gameWinner}
-        isOpen={overModalOpen}
+        isOpen={0}
         onClose={() => setOverModalOpen(false)}
         restartGame={offerRematch}
         subtitleText={subtitleText}
@@ -452,46 +455,98 @@ function OnlineMultiplayer ({ socket, username }) {
             py={3}
             px={{ xs: 1, md: 5 }}
             direction={{ xs: 'column', md: 'row' }}
-            alignItems='center'
-            justifyContent={{ xs: 'center', md: 'space-evenly' }}
+            alignItems={{xs:'start', md:'center'}}
+            justifyContent={'space-evenly'}
           >
-            <Typography
-              fontWeight='800'
-              flexGrow={{ xs: 0, md: 1 }}
-              flexBasis={0}
-              fontSize={{ xs: '1.5rem', md: '3rem' }}
-              alignSelf='start'
-              color='text.primary'
-              textAlign={'end'}
-              mr={{ xs: 0, md: 3 }}
-              mb={{ xs: 2, md: 0 }}
-              width='fill-available'
-            >
-              <span style={{ fontSize: '80%', fontWeight: '200' }}>
-                {Math.floor(oppTimer / 60) +
-                  ':' +
-                  `${oppTimer % 60 < 10 ? '0' : ''}${oppTimer % 60}`}
-                {isMobile && ' | '}
-              </span>
-              {isMobile
-                ? white.username === username
-                  ? black.username
-                  : white.username
-                : null}
-              <LinearProgress
+            {isMobile ? (
+              <Stack
+                direction='column'
+                alignItems='start'
+                justifyContent={'start'}
+                flexGrow={1}
+                flexBasis={'100%'}
+                color='text.primary'
+                mb={2}
+              >
+                <CapturedPieces
+                  align={'end'}
+                  gameHistory={gameHistory}
+                  color={white.username === username ? 'w' : 'b'}
+                />
+                <Stack direction='row' justifyContent='center' alignItems='center' mt={1}>
+                  <Typography
+                    lineHeight='100%'
+                    mr={1}
+                    fontWeight='600'
+                    fontSize={'1.9rem'}
+                    textAlign={'center'}
+                  >
+                    {white.username === username
+                      ? black.username
+                      : white.username}
+                  </Typography>{' '}
+                  <Typography
+                    borderRadius={5}
+                    bgcolor={'rgba(170,170,170,0.15)'}
+                    px={2}
+                    py={0.5}
+                    fontWeight='200'
+                    fontSize={'1rem'}
+                    textAlign={'center'}
+                  >
+                    {Math.floor(oppTimer / 60) +
+                      ':' +
+                      `${oppTimer % 60 < 10 ? '0' : ''}${oppTimer % 60}`}
+                  </Typography>
+                </Stack>
+                
+              </Stack>
+            ) : (
+              <Stack
+                justifyContent={'end'}
+                alignItems='end'
+                flexGrow={1}
+                flexBasis={0}
+                width='fill-available'
+                alignSelf='start'
+                color='text.primary'
+                mr={3}
+              >
+                <Typography
+                  fontWeight='600'
+                  fontSize={'3rem'}
+                  textAlign={'end'}
+                >
+                  {white.username === username
+                    ? black.username
+                    : white.username}
+                </Typography>
+                <Typography
+                  fontWeight='200'
+                  fontSize={'2rem'}
+                  textAlign={'end'}
+                  mb={1}
+                >
+                  {Math.floor(oppTimer / 60) +
+                    ':' +
+                    `${oppTimer % 60 < 10 ? '0' : ''}${oppTimer % 60}`}
+                </Typography>
+                {/* <LinearProgress
                 sx={{ mt: isMobile ? 1 : 0 }}
                 disabled={yourTurn}
                 variant={'determinate'}
                 value={oppTimer * (100 / location.state?.time)}
-              />
-              {!isMobile
-                ? white.username === username
-                  ? black.username
-                  : white.username
-                : null}
-            </Typography>
+              /> */}
+
+                <CapturedPieces
+                  align={'end'}
+                  gameHistory={gameHistory}
+                  color={white.username === username ? 'w' : 'b'}
+                />
+              </Stack>
+            )}
             <Chessboard
-              orientation={black.id === socket.id ? 'black' : 'white'}
+              orientation={black.username === username ? 'black' : 'white'}
               undo
               calcWidth={({ screenWidth, screenHeight }) =>
                 screenHeight < screenWidth
@@ -513,41 +568,83 @@ function OnlineMultiplayer ({ socket, username }) {
               darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
               lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
             />
-            <Typography
-              width='fill-available'
-              fontWeight='800'
-              flexGrow={{ xs: 0, md: 1 }}
-              flexBasis={0}
-              fontSize={{ xs: '1.5rem', md: '3rem' }}
-              alignSelf='end'
+            {isMobile ? (
+              <Stack
+              direction='column'
+              alignItems='start'
+              justifyContent={'start'}
+              flexGrow={1}
+              flexBasis={'100%'}
               color='text.primary'
-              ml={{ xs: 0, md: 3 }}
-              mt={{ xs: 2, md: 0 }}
-              textAlign={{ md: 'start' }}
+              mt={2}
             >
-              {!isMobile
-                ? black.username === username
-                  ? black.username
-                  : white.username
-                : null}
-              <LinearProgress
-                sx={{ mb: isMobile ? 1 : 0 }}
-                disabled={!yourTurn}
-                variant={'determinate'}
-                value={yourTimer * (100 / location.state?.time)}
+              <Stack direction='row' justifyContent='center' alignItems='center' mb={1}>
+                <Typography
+                  lineHeight='100%'
+                  mr={1}
+                  fontWeight='600'
+                  fontSize={'1.9rem'}
+                  textAlign={'center'}
+                >
+                  {white.username === username
+                    ? white.username
+                    : black.username}
+                </Typography>{' '}
+                <Typography
+                  borderRadius={5}
+                  bgcolor={'rgba(170,170,170,0.15)'}
+                  px={2}
+                  py={0.5}
+                  fontWeight='200'
+                  fontSize={'1rem'}
+                  textAlign={'center'}
+                >
+                  {Math.floor(yourTimer / 60) +
+                    ':' +
+                    `${yourTimer % 60 < 10 ? '0' : ''}${yourTimer % 60}`}
+                </Typography>
+              </Stack>
+              <CapturedPieces
+                align={'end'}
+                gameHistory={gameHistory}
+                color={black.username === username ? 'w' : 'b'}
               />
-              {isMobile
-                ? black.username === username
-                  ? black.username
-                  : white.username
-                : null}
-              <span style={{ fontSize: '80%', fontWeight: '200' }}>
-                {isMobile && ' | '}
-                {Math.floor(yourTimer / 60) +
-                  ':' +
-                  `${yourTimer % 60 < 10 ? '0' : ''}${yourTimer % 60}`}
-              </span>
-            </Typography>
+            </Stack>
+            ) : (
+              <Box
+                flexGrow={1}
+                flexBasis={0}
+                width='fill-available'
+                alignSelf='end'
+                color='text.primary'
+                ml={3}
+              >
+                <CapturedPieces
+                  gameHistory={gameHistory}
+                  color={black.username === username ? 'w' : 'b'}
+                />
+                <Typography
+                  mt={1}
+                  fontWeight='200'
+                  fontSize={'2rem'}
+                  textAlign={'start'}
+                >
+                  {Math.floor(yourTimer / 60) +
+                    ':' +
+                    `${yourTimer % 60 < 10 ? '0' : ''}${yourTimer % 60}`}
+                </Typography>
+                <Typography
+                lineHeight='110%'
+                  fontWeight='600'
+                  fontSize={'3rem'}
+                  textAlign={'start'}
+                >
+                  {white.username === username
+                    ? white.username
+                    : black.username}
+                </Typography>
+              </Box>
+            )}
           </Stack>
           <Stack justifySelf='flex-start' direction='row' gap={2} mb={2}>
             {!gameOver ? (

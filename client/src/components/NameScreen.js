@@ -16,8 +16,8 @@ function NameScreen ({ setOuterUsername, toast }) {
       setError('Minimum 3 characters required')
       return
     }
-    if (username.length > 10) {
-      setError('Maximum 10 characters allowed')
+    if (username.length > 15) {
+      setError('Maximum 15 characters allowed')
       return
     }
     if (!username.match(/^[0-9a-zA-Z_]+$/)) {

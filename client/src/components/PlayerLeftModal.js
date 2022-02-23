@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react'
 import { StageSpinner } from 'react-spinners-kit'
 
 function PlayerLeftModal ({ backdropOpen, onTimeout, setBackdropOpen }) {
-  const [time, setTime] = useState(45)
+  const [time, setTime] = useState(20)
   const timer = () => setTime(prev => prev - 1)
 
   useEffect(() => {
     const id = backdropOpen ? setInterval(timer, 1000) : null
     return () => {
-      setTime(45)
+      setTime(20)
       clearInterval(id)
     }
   }, [backdropOpen])
