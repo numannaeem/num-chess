@@ -1,52 +1,59 @@
 import React, { useEffect, useState } from 'react'
 import { Stack } from '@mui/material'
 
-const PieceIcon = ({ piece_color }) => (
+const PieceIcon = ({ pieceDashColor }) => (
   <img
-    alt={piece_color}
-    src={`./pieces/${piece_color}.png`}
-    height={piece_color[0] === 'p' ? '21px' : '25px'}
-    width={piece_color[0] === 'p' ? '17px' : '21px'}
-		style={{objectFit:'cover'}}
+    alt={pieceDashColor}
+    src={`./pieces/${pieceDashColor}.png`}
+    height={pieceDashColor[0] === 'p' ? '21px' : '25px'}
+    width={pieceDashColor[0] === 'p' ? '13px' : '23px'}
+    style={{ objectFit: 'cover' }}
   />
 )
 
 function CapturedPieces ({ gameHistory, color, align }) {
-  const [capturedIcons, setCapturedIcons] = useState([])
+  const [capturedPieces, setCapturedPieces] = useState([])
 
   useEffect(() => {
     if (gameHistory[gameHistory.length - 1]?.captured !== null) {
-      //if latest move is a capture - just to optimize
-      const temp = []
+      // 👆 if latest move is a capture - just to optimize
+      const pieces = { p: 0, n: 0, b: 0, r: 0, q: 0 }
       for (const move of gameHistory) {
-        if (move.hasOwnProperty('captured') && move.color !== color) {
-          temp.push(`${move.captured}-${color}`)
+        if (move.captured && move.color !== color) {
+          pieces[move.captured]++
         }
       }
-      setCapturedIcons(temp)
+      const final = []
+      pieces.p > 0 && final.push(...new Array(pieces.p).fill(`p-${color}`))
+      pieces.n > 0 && final.push(...new Array(pieces.n).fill(`n-${color}`))
+      pieces.b > 0 && final.push(...new Array(pieces.b).fill(`b-${color}`))
+      pieces.r > 0 && final.push(...new Array(pieces.r).fill(`r-${color}`))
+      pieces.q > 0 && final.push(...new Array(pieces.q).fill(`q-${color}`))
+      console.log(final)
+      setCapturedPieces(final)
     }
   }, [color, gameHistory])
 
   return (
     <>
-      {capturedIcons.length > 0 && (
-        <Stack
-				alignItems={'end'}
-				justifyContent={align || 'start'}
-				width={'fit-content'}
-				maxWidth={'100%'}
-				flexWrap='wrap'
-				px={'5px'}
-				py={'3px'}
-          direction={'row'}
-          bgcolor={'rgba(170,170,170,0.45)'}
-          borderRadius={1}
-        >
-          {capturedIcons.map((i, idx) => (
-            <PieceIcon piece_color={i} key={idx} />
-          ))}
-        </Stack>
-      )}
+      {capturedPieces.length > 0
+        ? (
+          <Stack
+            alignItems='end'
+            justifyContent={align || 'start'}
+            width='fit-content'
+            maxWidth='100%'
+            flexWrap='wrap'
+            px='5px'
+            py='3px'
+            direction='row'
+            bgcolor='rgba(170,170,170,0.45)'
+            borderRadius={1}
+          >
+            {capturedPieces.map((p, idx) => <PieceIcon key={idx} pieceDashColor={p} />)}
+          </Stack>
+          )
+        : <div style={{ height: '27px', width: '1px' }} />}
     </>
   )
 }

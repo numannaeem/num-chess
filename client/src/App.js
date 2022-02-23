@@ -21,7 +21,7 @@ function App () {
 
   const theme = createTheme({
     palette: {
-      mode: themeMode,
+      mode: themeMode
       // primary: purple,
       // secondary: red
       // primary: {
@@ -43,17 +43,17 @@ function App () {
         styleOverrides: {
           root: ({ ownerState, theme }) => ({
             ...(ownerState.disabled && {
-              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[500],
-            }),
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[500]
+            })
           }),
           bar: ({ ownerState, theme }) => ({
             ...(ownerState.disabled && {
-              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[800],
-            }),
-          }),
-        },
-      },
-    },
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[800]
+            })
+          })
+        }
+      }
+    }
   })
 
   useEffect(() => {

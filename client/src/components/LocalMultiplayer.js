@@ -14,8 +14,8 @@ import {
 import GameOverModal from './GameOverModal'
 import NavBar from './NavBar'
 
-const checkmateSound = new Audio('/sounds/victoryBell.mp3')
-const pieceMoveSound = new Audio('/sounds/pieceMove.wav')
+const checkmateSound = new window.Audio('/sounds/victoryBell.mp3')
+const pieceMoveSound = new window.Audio('/sounds/pieceMove.wav')
 
 function LocalMultiplayer () {
   const [fen, setFen] = useState('start')
@@ -63,10 +63,10 @@ function LocalMultiplayer () {
             }
           }
         : game.current?.in_check() && {
-            [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
-              backgroundColor: 'rgba(24,255,186,0.5)'
-            }
-          })
+          [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
+            backgroundColor: 'rgba(24,255,186,0.5)'
+          }
+        })
     }
   }, [gameHistory])
 
@@ -74,7 +74,6 @@ function LocalMultiplayer () {
     if (!game.current?.in_checkmate()) pieceMoveSound?.play()
     setSquareStyles(highlightLastMove())
   }, [gameHistory, highlightLastMove])
-  
 
   const finishGame = useCallback(move => {
     setGameOver(true)
@@ -223,14 +222,13 @@ function LocalMultiplayer () {
         alignItems='center'
       >
         <NavBar />
-        <Stack flexGrow={1} alignItems='center' justifyContent={'center'}>
+        <Stack flexGrow={1} alignItems='center' justifyContent='center'>
           <Chessboard
             undo
             calcWidth={({ screenWidth, screenHeight }) =>
               screenHeight < screenWidth
                 ? 0.75 * screenHeight
-                : 0.95 * screenWidth
-            }
+                : 0.95 * screenWidth}
             position={fen}
             transitionDuration={50}
             draggable={!gameOver}

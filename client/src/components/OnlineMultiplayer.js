@@ -2,19 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Chessboard from 'chessboardjsx'
 import Chess from 'chess.js'
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  LinearProgress,
   Stack,
   SvgIcon,
-  Tooltip,
-  Typography,
-  useMediaQuery
+  Tooltip
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import GameOverModal from './GameOverModal'
@@ -24,14 +20,12 @@ import DrawSnackbar from './DrawSnackbar'
 import RematchSnackbar from './RematchSnackbar'
 import { ReactComponent as HandshakeIcon } from '../svgIcons/handshake.svg'
 import { ReactComponent as WhiteFlagIcon } from '../svgIcons/whiteFlag.svg'
-import CapturedPieces from './CapturedPieces'
+import PlayerInfo from './PlayerInfo'
 
-const checkmateSound = new Audio('/sounds/victoryBell.mp3')
-const pieceMoveSound = new Audio('/sounds/pieceMove.wav')
+const checkmateSound = new window.Audio('/sounds/victoryBell.mp3')
+const pieceMoveSound = new window.Audio('/sounds/pieceMove.wav')
 
 function OnlineMultiplayer ({ socket, username }) {
-  const isMobile = useMediaQuery(theme => theme.breakpoints.down('md'))
-
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -116,6 +110,7 @@ function OnlineMultiplayer ({ socket, username }) {
     [username]
   )
 
+  // check if location.state present useEffect
   useEffect(() => {
     if (!location.state) {
       navigate('/')
@@ -135,6 +130,7 @@ function OnlineMultiplayer ({ socket, username }) {
     setSquareStyles(highlightLastMove())
   }, [gameHistory, highlightLastMove])
 
+  // main socket useEffect
   useEffect(() => {
     socket?.on('next-turn', data => {
       const move = game.current.move(data.move)
@@ -155,7 +151,7 @@ function OnlineMultiplayer ({ socket, username }) {
     })
 
     socket?.on('game-finished', () => {
-      //game finished i.e the player disconnected and game finished while he was gone
+      // game finished i.e the player disconnected and game finished while he was gone
       setGameWinner('Nobody')
       setSubtitleText('Your connection timed out :/')
       finishGame()
@@ -227,6 +223,7 @@ function OnlineMultiplayer ({ socket, username }) {
     })
   }, [socket, username, finishGame, gameOver, black, white])
 
+  // accept rematch useEffect
   useEffect(() => {
     socket?.on('rematch-accepted', data => {
       setSquareStyles({})
@@ -254,6 +251,7 @@ function OnlineMultiplayer ({ socket, username }) {
     }
   }, [])
 
+  // decrement timers useEffect
   useEffect(() => {
     const intervalFn = setInterval(() => {
       if (backdropOpen || gameOver) return
@@ -263,14 +261,15 @@ function OnlineMultiplayer ({ socket, username }) {
     return () => clearInterval(intervalFn)
   }, [yourTurn, backdropOpen, gameOver])
 
+  // handle time-outs useEffect
   useEffect(() => {
     if (oppTimer <= 0) {
-      socket.emit('timed-out', username) //person who won
+      socket.emit('timed-out', username) // person who won
     } else if (yourTimer <= 0) {
       socket.emit(
         'timed-out',
         white.username === username ? black.username : white.username
-      ) //HANDLE
+      ) // HANDLE
     }
   }, [yourTimer, oppTimer, socket, white, black, username])
 
@@ -421,7 +420,7 @@ function OnlineMultiplayer ({ socket, username }) {
       />
       <GameOverModal
         winner={gameWinner}
-        isOpen={0}
+        isOpen={overModalOpen}
         onClose={() => setOverModalOpen(false)}
         restartGame={offerRematch}
         subtitleText={subtitleText}
@@ -455,96 +454,18 @@ function OnlineMultiplayer ({ socket, username }) {
             py={3}
             px={{ xs: 1, md: 5 }}
             direction={{ xs: 'column', md: 'row' }}
-            alignItems={{xs:'start', md:'center'}}
-            justifyContent={'space-evenly'}
+            alignItems={{ xs: 'start', sm: 'center' }}
+            justifyContent='space-evenly'
           >
-            {isMobile ? (
-              <Stack
-                direction='column'
-                alignItems='start'
-                justifyContent={'start'}
-                flexGrow={1}
-                flexBasis={'100%'}
-                color='text.primary'
-                mb={2}
-              >
-                <CapturedPieces
-                  align={'end'}
-                  gameHistory={gameHistory}
-                  color={white.username === username ? 'w' : 'b'}
-                />
-                <Stack direction='row' justifyContent='center' alignItems='center' mt={1}>
-                  <Typography
-                    lineHeight='100%'
-                    mr={1}
-                    fontWeight='600'
-                    fontSize={'1.9rem'}
-                    textAlign={'center'}
-                  >
-                    {white.username === username
-                      ? black.username
-                      : white.username}
-                  </Typography>{' '}
-                  <Typography
-                    borderRadius={5}
-                    bgcolor={'rgba(170,170,170,0.15)'}
-                    px={2}
-                    py={0.5}
-                    fontWeight='200'
-                    fontSize={'1rem'}
-                    textAlign={'center'}
-                  >
-                    {Math.floor(oppTimer / 60) +
-                      ':' +
-                      `${oppTimer % 60 < 10 ? '0' : ''}${oppTimer % 60}`}
-                  </Typography>
-                </Stack>
-                
-              </Stack>
-            ) : (
-              <Stack
-                justifyContent={'end'}
-                alignItems='end'
-                flexGrow={1}
-                flexBasis={0}
-                width='fill-available'
-                alignSelf='start'
-                color='text.primary'
-                mr={3}
-              >
-                <Typography
-                  fontWeight='600'
-                  fontSize={'3rem'}
-                  textAlign={'end'}
-                >
-                  {white.username === username
-                    ? black.username
-                    : white.username}
-                </Typography>
-                <Typography
-                  fontWeight='200'
-                  fontSize={'2rem'}
-                  textAlign={'end'}
-                  mb={1}
-                >
-                  {Math.floor(oppTimer / 60) +
-                    ':' +
-                    `${oppTimer % 60 < 10 ? '0' : ''}${oppTimer % 60}`}
-                </Typography>
-                {/* <LinearProgress
-                sx={{ mt: isMobile ? 1 : 0 }}
-                disabled={yourTurn}
-                variant={'determinate'}
-                value={oppTimer * (100 / location.state?.time)}
-              /> */}
-
-                <CapturedPieces
-                  align={'end'}
-                  gameHistory={gameHistory}
-                  color={white.username === username ? 'w' : 'b'}
-                />
-              </Stack>
-            )}
+            <PlayerInfo
+              black={black}
+              white={white}
+              username={username}
+              yourTimer={yourTimer}
+              oppTimer={oppTimer}
+              gameHistory={gameHistory}
+              opponent
+            />
             <Chessboard
               orientation={black.username === username ? 'black' : 'white'}
               undo
@@ -568,83 +489,14 @@ function OnlineMultiplayer ({ socket, username }) {
               darkSquareStyle={{ backgroundColor: 'rgb(181, 136, 99)' }}
               lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
             />
-            {isMobile ? (
-              <Stack
-              direction='column'
-              alignItems='start'
-              justifyContent={'start'}
-              flexGrow={1}
-              flexBasis={'100%'}
-              color='text.primary'
-              mt={2}
-            >
-              <Stack direction='row' justifyContent='center' alignItems='center' mb={1}>
-                <Typography
-                  lineHeight='100%'
-                  mr={1}
-                  fontWeight='600'
-                  fontSize={'1.9rem'}
-                  textAlign={'center'}
-                >
-                  {white.username === username
-                    ? white.username
-                    : black.username}
-                </Typography>{' '}
-                <Typography
-                  borderRadius={5}
-                  bgcolor={'rgba(170,170,170,0.15)'}
-                  px={2}
-                  py={0.5}
-                  fontWeight='200'
-                  fontSize={'1rem'}
-                  textAlign={'center'}
-                >
-                  {Math.floor(yourTimer / 60) +
-                    ':' +
-                    `${yourTimer % 60 < 10 ? '0' : ''}${yourTimer % 60}`}
-                </Typography>
-              </Stack>
-              <CapturedPieces
-                align={'end'}
-                gameHistory={gameHistory}
-                color={black.username === username ? 'w' : 'b'}
-              />
-            </Stack>
-            ) : (
-              <Box
-                flexGrow={1}
-                flexBasis={0}
-                width='fill-available'
-                alignSelf='end'
-                color='text.primary'
-                ml={3}
-              >
-                <CapturedPieces
-                  gameHistory={gameHistory}
-                  color={black.username === username ? 'w' : 'b'}
-                />
-                <Typography
-                  mt={1}
-                  fontWeight='200'
-                  fontSize={'2rem'}
-                  textAlign={'start'}
-                >
-                  {Math.floor(yourTimer / 60) +
-                    ':' +
-                    `${yourTimer % 60 < 10 ? '0' : ''}${yourTimer % 60}`}
-                </Typography>
-                <Typography
-                lineHeight='110%'
-                  fontWeight='600'
-                  fontSize={'3rem'}
-                  textAlign={'start'}
-                >
-                  {white.username === username
-                    ? white.username
-                    : black.username}
-                </Typography>
-              </Box>
-            )}
+            <PlayerInfo
+              black={black}
+              white={white}
+              username={username}
+              yourTimer={yourTimer}
+              oppTimer={oppTimer}
+              gameHistory={gameHistory}
+            />
           </Stack>
           <Stack justifySelf='flex-start' direction='row' gap={2} mb={2}>
             {!gameOver ? (

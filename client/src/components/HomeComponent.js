@@ -74,9 +74,9 @@ function HomeComponent ({
             py={2}
             mx={2}
           >
-            <Typography variant={'h3'} fontWeight={600} color='primary'>
-              NumChess 
-              <SvgIcon className='logo' sx={{marginLeft: 1, filter: 'drop-shadow(1px 1px 1px rgba(0, 0, 0, .7))'}} fontSize='inherit' >
+            <Typography variant='h3' fontWeight={600} color='primary'>
+              NumChess
+              <SvgIcon className='logo' sx={{ marginLeft: 1, filter: 'drop-shadow(1px 1px 1px rgba(0, 0, 0, .7))' }} fontSize='inherit'>
                 <Logo />
               </SvgIcon>
             </Typography>
@@ -114,8 +114,7 @@ function HomeComponent ({
               </Button>
               <TextField
                 onKeyDown={e =>
-                  e.key === 'Enter' && roomName.length === 6 && handleSubmit()
-                }
+                  e.key === 'Enter' && roomName.length === 6 && handleSubmit()}
                 color='secondary'
                 variant='outlined'
                 size='small'
@@ -195,7 +194,7 @@ function HomeComponent ({
             borderRadius='1rem 1rem 0 0'
             bgcolor='rgba(155, 155, 155, 0.2)'
           >
-            <Typography fontSize={'85%'} color='text.primary' fontWeight='600'>
+            <Typography fontSize='85%' color='text.primary' fontWeight='600'>
               made by{' '}
               <Link
                 target='_blank'

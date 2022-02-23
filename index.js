@@ -116,7 +116,7 @@ io.on('connection', async socket => {
           if (roomData[roomName].currentPlayer.username === username) {
             roomData[roomName].currentPlayer.id = socket.id
           }
-          roomData[roomName].timeLeft[playerData.color] -= 40 //40 second penalty on disconnect
+          roomData[roomName].timeLeft[playerData.color] -= 40 // 40 second penalty on disconnect
           io.in(roomName).emit('update-data', roomData[roomName])
         }
       } else {
@@ -162,7 +162,7 @@ io.on('connection', async socket => {
       const { roomName } = socket
       if (roomName) {
         io.in(roomName).emit('player-left')
-        if(roomData[roomName]) {
+        if (roomData[roomName]) {
           roomData[roomName].activePlayers--
           if (roomData[roomName].activePlayers <= 0) {
             roomData[roomName] = null

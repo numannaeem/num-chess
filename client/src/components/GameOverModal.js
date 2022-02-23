@@ -33,8 +33,8 @@ function GameOverModal ({
   const navigate = useNavigate()
   return (
     <Dialog
-    fullWidth
-      maxWidth={'xs'}
+      fullWidth
+      maxWidth='xs'
       open={isOpen}
       onClose={(event, reason) => {
         if (reason && reason !== 'backdropClick') onClose()
@@ -46,11 +46,11 @@ function GameOverModal ({
             {winner === 'draw'
               ? "It's a draw!"
               : winner === 'Nobody'
-              ? 'Uh-oh!'
-              : `${winner} wins!`}
+                ? 'Uh-oh!'
+                : `${winner} wins!`}
           </Box>
           {winner !== 'Nobody' && (
-            <IconButton sx={{p: 0, color: 'grey.400'}} onClick={onClose}>
+            <IconButton sx={{ p: 0, color: 'grey.400' }} onClick={onClose}>
               <CloseIcon />
             </IconButton>
           )}
