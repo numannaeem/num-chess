@@ -1,4 +1,4 @@
-const defaultGameTime = 10
+const defaultGameTime = 300
 
 const createRoom = (socket, roomData, roomName, username, timeControl) => {
   if (socket.roomName) {

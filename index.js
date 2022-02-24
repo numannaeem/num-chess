@@ -129,7 +129,6 @@ io.on('connection', async socket => {
         winner,
         timedOut: true
       })
-      console.log(username + 'emitted')
     })
 
     socket.on('matchmake', () => {
