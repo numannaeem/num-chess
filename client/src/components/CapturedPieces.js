@@ -6,8 +6,14 @@ const PieceIcon = ({ pieceDashColor }) => (
     alt={pieceDashColor}
     src={`./pieces/${pieceDashColor}.png`}
     height={pieceDashColor[0] === 'p' ? '21px' : '25px'}
-    width={pieceDashColor[0] === 'p' ? '13px' : '23px'}
-    style={{ objectFit: 'cover' }}
+    width={pieceDashColor[0] === 'p' ? '15px' : '23px'}
+    style={{
+      objectFit: 'cover',
+      filter:
+        pieceDashColor[2] === 'b'
+          ? 'drop-shadow(1px 0px 0 white) drop-shadow(0px 1px 0 white) drop-shadow(-1px -0px 0 white) drop-shadow(-0px -1px 0 white)'
+          : 'none'
+    }}
   />
 )
 
@@ -29,31 +35,32 @@ function CapturedPieces ({ gameHistory, color, align }) {
       pieces.b > 0 && final.push(...new Array(pieces.b).fill(`b-${color}`))
       pieces.r > 0 && final.push(...new Array(pieces.r).fill(`r-${color}`))
       pieces.q > 0 && final.push(...new Array(pieces.q).fill(`q-${color}`))
-      console.log(final)
       setCapturedPieces(final)
     }
   }, [color, gameHistory])
 
   return (
     <>
-      {capturedPieces.length > 0
-        ? (
-          <Stack
-            alignItems='end'
-            justifyContent={align || 'start'}
-            width='fit-content'
-            maxWidth='100%'
-            flexWrap='wrap'
-            px='5px'
-            py='3px'
-            direction='row'
-            bgcolor='rgba(170,170,170,0.45)'
-            borderRadius={1}
-          >
-            {capturedPieces.map((p, idx) => <PieceIcon key={idx} pieceDashColor={p} />)}
-          </Stack>
-          )
-        : <div style={{ height: '27px', width: '1px' }} />}
+      {capturedPieces.length > 0 ? (
+        <Stack
+          alignItems='end'
+          justifyContent={align || 'start'}
+          width='fit-content'
+          maxWidth='100%'
+          flexWrap='wrap'
+          px='5px'
+          py='3px'
+          direction='row'
+          bgcolor='rgba(170,170,170,0.2)'
+          borderRadius={1}
+        >
+          {capturedPieces.map((p, idx) => (
+            <PieceIcon key={idx} pieceDashColor={p} />
+          ))}
+        </Stack>
+      ) : (
+        <div style={{ height: '27px', width: '1px' }} />
+      )}
     </>
   )
 }

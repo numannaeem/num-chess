@@ -18,6 +18,7 @@ import {
 import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
 import { ReactComponent as Logo } from '../svgIcons/knightLogo.svg'
 import SettingsSubmenu from './SettingsSubmenu'
+import TimeControlSubmenu from './TimeControlSubmenu'
 
 function HomeComponent ({
   toast,
@@ -30,6 +31,7 @@ function HomeComponent ({
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
   const [settingsMenu, setSettingsMenu] = useState(false)
+  const [timeControlMenu, setTimeControlMenu] = useState(false)
 
   const hoverStyles = text => {
     return {
@@ -88,7 +90,7 @@ function HomeComponent ({
         <Box position='relative'>
           <Slide
             direction='right'
-            in={entered >= 1 && !settingsMenu}
+            in={entered >= 1 && !settingsMenu && !timeControlMenu}
             onEntered={() => setEntered(2)}
             timeout={{ enter: 300, exit: 100 }}
           >
@@ -104,7 +106,7 @@ function HomeComponent ({
               </Button>
               <Divider variant='middle' />
               <Button
-                onClick={() => navigate('room')}
+                onClick={() => setTimeControlMenu(true)}
                 color='secondary'
                 type='submit'
                 variant='outlined'
@@ -182,6 +184,19 @@ function HomeComponent ({
                 theme={theme}
                 username={username}
                 setSettingsMenu={setSettingsMenu}
+              />
+            </Box>
+          </Slide>
+          <Slide
+            unmountOnExit
+            direction='left'
+            in={entered >= 1 && timeControlMenu}
+            onEntered={() => setEntered(2)}
+            timeout={{ enter: 300, exit: 100 }}
+          >
+            <Box width='100%' top='0' position='absolute'>
+              <TimeControlSubmenu
+                setTimeControlMenu={setTimeControlMenu}
               />
             </Box>
           </Slide>

@@ -1,6 +1,6 @@
-const gameTime = 600
+const defaultGameTime = 10
 
-const createRoom = (socket, roomData, roomName, username) => {
+const createRoom = (socket, roomData, roomName, username, timeControl) => {
   if (socket.roomName) {
     const prevRoom = socket.roomName
     socket.leave(prevRoom)
@@ -22,9 +22,10 @@ const createRoom = (socket, roomData, roomName, username) => {
       currentPlayer: null,
       activePlayers: 1,
       timeLeft: {
-        white: gameTime,
-        black: gameTime
-      }
+        white: timeControl || defaultGameTime,
+        black: timeControl || defaultGameTime
+      },
+      totalTime: timeControl || defaultGameTime
     }
     roomData[roomName].players.push({ id: socket.id, username })
   }
@@ -60,7 +61,7 @@ const addToRoom = (io, socket, roomData, roomName, username) => {
       white: roomData[roomName].currentPlayer,
       black: roomData[roomName].players[+!rand],
       roomName,
-      time: gameTime
+      time: roomData[roomName].totalTime
     })
   } else {
     socket.emit('invalid-room-name')

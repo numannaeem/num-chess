@@ -18,7 +18,6 @@ app.use((req, res, next) => {
 app.use(express.json()) // used to parse json requests
 app.use(express.static(path.resolve(__dirname, './client/build')))
 
-const gameTime = 600
 const roomData = {}
 const matchmakingRooms = []
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
@@ -27,8 +26,8 @@ io.on('connection', async socket => {
   try {
     const { username } = socket.handshake.query
     console.log(username + ' (' + socket.id + ') connected')
-    socket.on('create-room', roomName =>
-      createRoom(socket, roomData, roomName, username)
+    socket.on('create-room', ({roomName, timeControl}) =>
+      createRoom(socket, roomData, roomName, username, timeControl)
     )
     socket.on('join-room', roomName =>
       addToRoom(io, socket, roomData, roomName, username)
@@ -84,13 +83,14 @@ io.on('connection', async socket => {
       roomData[roomName].players[rand].color = 'white' // first player becomes white
       roomData[roomName].players[+!rand].color = 'black'
       roomData[roomName].timeLeft = {
-        white: gameTime,
-        black: gameTime
+        white: roomData[roomName].totalTime,
+        black: roomData[roomName].totalTime
       }
       roomData[roomName].currentPlayer = roomData[roomName].players[rand]
       io.in(roomName).emit('rematch-accepted', {
         white: roomData[roomName].currentPlayer,
-        black: roomData[roomName].players[+!rand]
+        black: roomData[roomName].players[+!rand],
+        time: roomData[roomName].totalTime
       })
     })
 
@@ -129,6 +129,7 @@ io.on('connection', async socket => {
         winner,
         timedOut: true
       })
+      console.log(username + 'emitted')
     })
 
     socket.on('matchmake', () => {
@@ -169,7 +170,7 @@ io.on('connection', async socket => {
           }
         }
       }
-      console.log(`${socket.id} disconnected`)
+      console.log(`${username} (${socket.id}) disconnected`)
     })
   } catch (err) {
     console.log('ERROR: ' + err)

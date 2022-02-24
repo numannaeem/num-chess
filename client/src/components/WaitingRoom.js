@@ -9,6 +9,7 @@ function WaitingRoom ({ socket }) {
   const navigate = useNavigate()
   const enteredRoomName = location.state?.roomName || ''
   const [roomName, setRoomName] = useState(enteredRoomName)
+  const [timeControl, setTimeControl] = useState(location.state?.time || 600)
   const [copied, setCopied] = useState(false)
   const [invalidRoomName, setInvalidRoomName] = useState(false)
 
@@ -28,8 +29,8 @@ function WaitingRoom ({ socket }) {
   // join room useEffect
   useEffect(() => {
     if (enteredRoomName) socket.emit('join-room', enteredRoomName)
-    else if (roomName) socket.emit('create-room', roomName)
-  }, [enteredRoomName, socket, roomName])
+    else if (roomName) socket.emit('create-room', {roomName, timeControl})
+  }, [enteredRoomName, socket, roomName, timeControl])
 
   useEffect(() => {
     socket?.on('init-game', data => {
@@ -92,6 +93,9 @@ function WaitingRoom ({ socket }) {
                   </Typography>
                 </Box>
               </Tooltip>
+              <Typography color='secondary' variant='subtitle1' textAlign='center'>
+                Time control: {Math.round(timeControl/60)} mins
+              </Typography>
               <Typography color='primary' variant='subtitle1' textAlign='center'>
                 waiting for your opponent
               </Typography>

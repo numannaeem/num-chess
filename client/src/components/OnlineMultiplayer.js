@@ -104,8 +104,8 @@ function OnlineMultiplayer ({ socket, username }) {
         } else if (game.current.in_threefold_repetition()) {
           setSubtitleText('Draw by threefold repetition')
         }
+        return 'draw'
       }
-      return 'draw'
     },
     [username]
   )
@@ -157,28 +157,6 @@ function OnlineMultiplayer ({ socket, username }) {
       finishGame()
     })
 
-    socket?.on('game-over', data => {
-      if (data.timedOut) {
-        setGameWinner(data.winner)
-        const subText = `${
-          data.winner === black.username ? 'White' : 'Black'
-        } ran out of time`
-        if (data.winner === username) {
-          setOppTimer(0)
-        } else {
-          setYourTimer(0)
-        }
-        setSubtitleText(subText)
-        finishGame()
-        return
-      }
-      const move = game.current.move(data.move)
-      setGameHistory(game.current.history({ verbose: true }))
-      setFen(game.current.fen())
-      finishGame(move)
-      setGameWinner(data.winner)
-    })
-
     socket.on('player-left', () => {
       if (!gameOver) {
         setBackdropOpen(true)
@@ -223,9 +201,37 @@ function OnlineMultiplayer ({ socket, username }) {
     })
   }, [socket, username, finishGame, gameOver, black, white])
 
+  //game-over useEffect
+  useEffect(() => {
+    !gameOver && socket?.on('game-over', data => {
+      console.log('over')
+      if (data.timedOut) {
+        finishGame()
+        setGameWinner(data.winner)
+        const subText = `${
+          data.winner === black.username ? 'White' : 'Black'
+        } ran out of time`
+        if (data.winner === username) {
+          setOppTimer(0)
+        } else {
+          setYourTimer(0)
+        }
+        setSubtitleText(subText)
+        return
+      }
+      const move = game.current.move(data.move)
+      setGameHistory(game.current.history({ verbose: true }))
+      setFen(game.current.fen())
+      finishGame(move)
+      setGameWinner(data.winner)
+    })
+  }, [black, finishGame, socket, username, gameOver])
+
   // accept rematch useEffect
   useEffect(() => {
-    socket?.on('rematch-accepted', data => {
+    socket?.on('rematch-accepted', async data => {
+      await setYourTimer(data.time)
+      await setOppTimer(data.time)
       setSquareStyles({})
       setYourTurn(data.white.id === socket.id)
       setWhite(data.white)
@@ -236,13 +242,11 @@ function OnlineMultiplayer ({ socket, username }) {
       setGameOver(false)
       setRematchSnackbarOpen(false)
       setSubtitleText('')
-      setYourTimer(location.state?.time)
-      setOppTimer(location.state?.time)
       setFen('start')
       game.current = new Chess()
       setGameHistory([])
     })
-  }, [socket, location])
+  }, [socket])
 
   // initial game.current useEffect
   useEffect(() => {
@@ -263,15 +267,18 @@ function OnlineMultiplayer ({ socket, username }) {
 
   // handle time-outs useEffect
   useEffect(() => {
+    if(gameOver) return
     if (oppTimer <= 0) {
+      console.log('timedout');
       socket.emit('timed-out', username) // person who won
     } else if (yourTimer <= 0) {
+      console.log('timedout');
       socket.emit(
         'timed-out',
         white.username === username ? black.username : white.username
-      ) // HANDLE
+      )
     }
-  }, [yourTimer, oppTimer, socket, white, black, username])
+  }, [yourTimer, oppTimer, socket, username, gameOver])
 
   const getPiecePosition = piece => {
     return []
