@@ -259,8 +259,8 @@ function OnlineMultiplayer ({ socket, username }) {
   useEffect(() => {
     const intervalFn = setInterval(() => {
       if (backdropOpen || gameOver) return
-      if (yourTurn) setYourTimer(p => p - 1)
-      else if (!yourTurn) setOppTimer(p => p - 1)
+      if (yourTurn) setYourTimer(p => p>0 ? p - 1: p)
+      else if (!yourTurn) setOppTimer(p => p>0 ? p - 1: p)
     }, 1000)
     return () => clearInterval(intervalFn)
   }, [yourTurn, backdropOpen, gameOver])
@@ -482,7 +482,7 @@ function OnlineMultiplayer ({ socket, username }) {
                   : 0.95 * screenWidth
               }
               position={fen}
-              transitionDuration={100}
+              transitionDuration={20}
               draggable={yourTurn && !gameOver}
               onDrop={onDrop}
               boardStyle={{
