@@ -1,4 +1,4 @@
-import { Box, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Stack, Tooltip, Typography, useMediaQuery } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { DominoSpinner } from 'react-spinners-kit'
@@ -8,10 +8,12 @@ function WaitingRoom ({ socket }) {
   const location = useLocation()
   const navigate = useNavigate()
   const enteredRoomName = location.state?.roomName || ''
+  const timeControl = location.state?.time || 600
   const [roomName, setRoomName] = useState(enteredRoomName)
-  const [timeControl, setTimeControl] = useState(location.state?.time || 600)
   const [copied, setCopied] = useState(false)
+  const [open, setOpen] = useState(false)
   const [invalidRoomName, setInvalidRoomName] = useState(false)
+  const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'))
 
   useEffect(() => {
     if (!enteredRoomName) {
@@ -62,9 +64,13 @@ function WaitingRoom ({ socket }) {
           ? (
             <>
               <Tooltip
-                title={copied ? 'Copied!' : 'Click to copy!'}
+                title={copied ? 'Copied!' : isMobile ? 'Tap to copy' : 'Click to copy!'}
                 placement='top'
                 arrow
+                enterTouchDelay={0}
+                onOpen={() => setOpen(true)}
+                onClose={() => setOpen(false)}
+                open={isMobile || open}
               >
                 <Box
                   border='2px solid'
@@ -94,7 +100,7 @@ function WaitingRoom ({ socket }) {
                 </Box>
               </Tooltip>
               <Typography color='secondary' variant='subtitle1' textAlign='center'>
-                Time control: {Math.round(timeControl/60)} mins
+                time control: {Math.round(timeControl/60)} mins
               </Typography>
               <Typography color='primary' variant='subtitle1' textAlign='center'>
                 waiting for your opponent

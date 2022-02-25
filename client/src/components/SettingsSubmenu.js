@@ -95,7 +95,7 @@ function SettingsSubmenu ({
         color='secondary'
         variant='outlined'
         helperText={error}
-        error={error}
+        error={error.length > 0}
         size='small'
         label='Change username'
         value={innerUsername}

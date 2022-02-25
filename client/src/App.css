@@ -7,10 +7,10 @@
 	font-size: larger;
 }
 .logo:hover {
-  animation-name: logo-animation;  /* Refers to the name of your @keyframes element below */
-  animation-duration: 2s;        /* Change to speed up or slow down */
-  animation-iteration-count: 1;  /* Never stop waving :) */
-  transform-origin: 80% 80%;       /* Pivot around the bottom-left palm */
+  animation-name: logo-animation;
+  animation-duration: 2s;  
+  animation-iteration-count: 1;
+  transform-origin: 80% 80%;
 }
 
 @keyframes wave-animation {
@@ -32,10 +32,4 @@
    /* 45% { transform: rotate(2.0deg) } */
    /* 55% { transform: rotate( -1.0deg) }  Reset for the last half to pause */
   100% { transform: rotate( 0.0deg) }
-}
-
-.pawn-img {
-  position: absolute;
-  height: 100px;
-  left: 70px;
 }

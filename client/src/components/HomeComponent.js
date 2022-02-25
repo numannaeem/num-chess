@@ -61,13 +61,13 @@ function HomeComponent ({
       height='100vh'
       overflow='hidden'
       sx={{
-        transition: 'background-color 300ms ease-out'
+        transition: 'background-color 200ms ease-out'
       }}
       px={3}
       bgcolor='background.paper'
     >
       <Stack height='100%' alignItems='center' justifyContent='space-between'>
-        <Fade onEntered={() => setEntered(1)} in timeout={500}>
+        <Fade onEntered={() => setEntered(1)} in timeout={250}>
           <Stack
             alignItems='center'
             justifyContent='center'
@@ -92,7 +92,7 @@ function HomeComponent ({
             direction='right'
             in={entered >= 1 && !settingsMenu && !timeControlMenu}
             onEntered={() => setEntered(2)}
-            timeout={{ enter: 300, exit: 100 }}
+            timeout={{ enter: 200, exit: 100 }}
           >
             <Stack py={5} spacing={1} alignItems='center'>
               <Button
@@ -174,7 +174,7 @@ function HomeComponent ({
             direction='left'
             in={entered >= 1 && settingsMenu}
             onEntered={() => setEntered(2)}
-            timeout={{ enter: 300, exit: 100 }}
+            timeout={{ enter: 200, exit: 100 }}
           >
             <Box width='100%' top='0' position='absolute'>
               <SettingsSubmenu
@@ -192,7 +192,7 @@ function HomeComponent ({
             direction='left'
             in={entered >= 1 && timeControlMenu}
             onEntered={() => setEntered(2)}
-            timeout={{ enter: 300, exit: 100 }}
+            timeout={{ enter: 200, exit: 100 }}
           >
             <Box width='100%' top='0' position='absolute'>
               <TimeControlSubmenu
@@ -201,7 +201,7 @@ function HomeComponent ({
             </Box>
           </Slide>
         </Box>
-        <Slide timeout={600} direction='up' in={entered === 2}>
+        <Slide timeout={500} direction='up' in={entered === 2}>
           <Box
             justifySelf='flex-end'
             py={1}

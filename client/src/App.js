@@ -22,38 +22,26 @@ function App () {
   const theme = createTheme({
     palette: {
       mode: themeMode
-      // primary: purple,
-      // secondary: red
-      // primary: {
-      //   main: "#673ab7",
-      //   light:"#9a67ea",
-      //   dark:"#320b86"
-      // },
-      // secondary: {
-      //   main: "#ffc107",
-      //   light:"#fff350",
-      //   dark:"#c79100"
-      // }
     },
     typography: {
       fontFamily: 'JetBrains Mono, monospace'
     },
-    components: {
-      MuiLinearProgress: {
-        styleOverrides: {
-          root: ({ ownerState, theme }) => ({
-            ...(ownerState.disabled && {
-              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[500]
-            })
-          }),
-          bar: ({ ownerState, theme }) => ({
-            ...(ownerState.disabled && {
-              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[800]
-            })
-          })
-        }
-      }
-    }
+    // components: {
+    //   MuiLinearProgress: {
+    //     styleOverrides: {
+    //       root: ({ ownerState, theme }) => ({
+    //         ...(ownerState.disabled && {
+    //           backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[500]
+    //         })
+    //       }),
+    //       bar: ({ ownerState, theme }) => ({
+    //         ...(ownerState.disabled && {
+    //           backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[800]
+    //         })
+    //       })
+    //     }
+    //   }
+    // }
   })
 
   useEffect(() => {
