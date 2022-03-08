@@ -4,11 +4,11 @@ import {
   Typography
 } from '@mui/material'
 import { ArrowBackIos } from '@mui/icons-material'
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function TimeControlSubmenu ({ setTimeControlMenu }) {
-	const navigate = useNavigate()
+  const navigate = useNavigate()
   return (
     <Stack py={5} spacing={1}>
       <Stack mb={1} position='relative' direction='row' alignItems='center'>
@@ -27,10 +27,10 @@ function TimeControlSubmenu ({ setTimeControlMenu }) {
         <Typography
           px={4}
           py='6px'
-					fontSize="90%"
+          fontSize='90%'
           flexGrow={1}
           textAlign='center'
-					textTransform={'uppercase'}
+          textTransform='uppercase'
           color='primary.main'
         >
           Choose time control
@@ -44,8 +44,7 @@ function TimeControlSubmenu ({ setTimeControlMenu }) {
         onClick={() =>
           navigate('/room', {
             state: { time: 300 }
-          })
-        }
+          })}
       >
         5 mins
       </Button>
@@ -57,8 +56,7 @@ function TimeControlSubmenu ({ setTimeControlMenu }) {
         onClick={() =>
           navigate('/room', {
             state: { time: 600 }
-          })
-        }
+          })}
       >
         10 mins
       </Button>
@@ -70,8 +68,7 @@ function TimeControlSubmenu ({ setTimeControlMenu }) {
         onClick={() =>
           navigate('/room', {
             state: { time: 1200 }
-          })
-        }
+          })}
       >
         20 mins
       </Button>

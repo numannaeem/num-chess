@@ -41,26 +41,28 @@ function CapturedPieces ({ gameHistory, color, align }) {
 
   return (
     <>
-      {capturedPieces.length > 0 ? (
-        <Stack
-          alignItems='end'
-          justifyContent={align || 'start'}
-          width='fit-content'
-          maxWidth='100%'
-          flexWrap='wrap'
-          px='5px'
-          py='3px'
-          direction='row'
-          bgcolor='rgba(170,170,170,0.2)'
-          borderRadius={1}
-        >
-          {capturedPieces.map((p, idx) => (
-            <PieceIcon key={idx} pieceDashColor={p} />
-          ))}
-        </Stack>
-      ) : (
-        <div style={{ height: '27px', width: '1px' }} />
-      )}
+      {capturedPieces.length > 0
+        ? (
+          <Stack
+            alignItems='end'
+            justifyContent={align || 'start'}
+            width='fit-content'
+            maxWidth='100%'
+            flexWrap='wrap'
+            px='5px'
+            py='3px'
+            direction='row'
+            bgcolor='rgba(170,170,170,0.2)'
+            borderRadius={1}
+          >
+            {capturedPieces.map((p, idx) => (
+              <PieceIcon key={idx} pieceDashColor={p} />
+            ))}
+          </Stack>
+          )
+        : (
+          <div style={{ height: '27px', width: '1px' }} />
+          )}
     </>
   )
 }

@@ -19,7 +19,7 @@ function PlayerInfo ({
           ? (
             <Stack
               direction='column'
-              alignItems={{xs: 'space-between', sm: 'center'}}
+              alignItems={{ xs: 'space-between', sm: 'center' }}
               justifyContent='start'
               flexGrow={1}
               width='100%'
@@ -35,7 +35,7 @@ function PlayerInfo ({
                 direction='row'
                 justifyContent='space-between'
                 flexGrow={1}
-                flexBasis="100%"
+                flexBasis='100%'
                 alignItems='center'
                 mt={1}
               >
@@ -102,8 +102,10 @@ function PlayerInfo ({
           color='text.primary'
           mt={2}
         >
-          <Stack direction='row'
-                 justifyContent='space-between' alignItems='center' mb={1}>
+          <Stack
+            direction='row'
+            justifyContent='space-between' alignItems='center' mb={1}
+          >
             <Typography
               lineHeight='100%'
               mr={1}

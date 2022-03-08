@@ -13,6 +13,12 @@
   transform-origin: 80% 80%;
 }
 
+.bounce {
+  animation-name: bounce-animation;  /* Refers to the name of your @keyframes element below */
+  animation-duration: 10s;        /* Change to speed up or slow down */
+  animation-iteration-count: infinite;  /* Never stop waving :) */
+}
+
 @keyframes wave-animation {
     0% { transform: rotate( 0.0deg) }
    10% { transform: rotate(14.0deg) }  /* The following five values can be played with to make the waving more or less extreme */
@@ -22,6 +28,15 @@
    50% { transform: rotate(10.0deg) }
    60% { transform: rotate( 0.0deg) }  /* Reset for the last half to pause */
   100% { transform: rotate( 0.0deg) }
+}
+@keyframes bounce-animation {
+    0% { transform: translateY(0px) }
+   45% { transform: translateY(0px);}
+   50% { transform: translateY(-6px) }
+   55% { transform: translateY(0px) }
+   60% { transform: translateY(-6px) }
+   65% {transform: translateY(0)}
+  100% { transform: translateY(0px) }
 }
 @keyframes logo-animation {
     0% { transform: rotate( 0.0deg) }

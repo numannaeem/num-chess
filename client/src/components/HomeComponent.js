@@ -9,7 +9,6 @@ import {
   Fade,
   IconButton,
   InputAdornment,
-  Link,
   Slide,
   SvgIcon,
   TextField,
@@ -19,6 +18,7 @@ import ArrowIcon from '@mui/icons-material/ArrowForwardIosRounded'
 import { ReactComponent as Logo } from '../svgIcons/knightLogo.svg'
 import SettingsSubmenu from './SettingsSubmenu'
 import TimeControlSubmenu from './TimeControlSubmenu'
+import MadeByComponent from './MadeByComponent'
 
 function HomeComponent ({
   toast,
@@ -201,31 +201,9 @@ function HomeComponent ({
             </Box>
           </Slide>
         </Box>
-        <Slide timeout={500} direction='up' in={entered === 2}>
-          <Box
-            justifySelf='flex-end'
-            py={1}
-            px={3}
-            borderRadius='1rem 1rem 0 0'
-            bgcolor='rgba(155, 155, 155, 0.2)'
-          >
-            <Typography fontSize='85%' color='text.primary' fontWeight='600'>
-              made by{' '}
-              <Link
-                target='_blank'
-                sx={{
-                  '&:hover': {
-                    fontWeight: 'bolder',
-                    color: 'gray'
-                  }
-                }}
-                color='inherit'
-                href='https://www.github.com/numannaeem'
-                rel='noreferrer'
-              >
-                Numan Naeem<span className='wave'>&nbsp;👋</span>
-              </Link>
-            </Typography>
+        <Slide timeout={200} direction='up' in={entered === 2}>
+          <Box justifySelf='flex-end'>
+            <MadeByComponent />
           </Box>
         </Slide>
       </Stack>

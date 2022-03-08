@@ -25,7 +25,7 @@ function App () {
     },
     typography: {
       fontFamily: 'JetBrains Mono, monospace'
-    },
+    }
     // components: {
     //   MuiLinearProgress: {
     //     styleOverrides: {

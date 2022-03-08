@@ -31,7 +31,7 @@ function WaitingRoom ({ socket }) {
   // join room useEffect
   useEffect(() => {
     if (enteredRoomName) socket.emit('join-room', enteredRoomName)
-    else if (roomName) socket.emit('create-room', {roomName, timeControl})
+    else if (roomName) socket.emit('create-room', { roomName, timeControl })
   }, [enteredRoomName, socket, roomName, timeControl])
 
   useEffect(() => {
@@ -100,7 +100,7 @@ function WaitingRoom ({ socket }) {
                 </Box>
               </Tooltip>
               <Typography color='secondary' variant='subtitle1' textAlign='center'>
-                time control: {Math.round(timeControl/60)} mins
+                time control: {Math.round(timeControl / 60)} mins
               </Typography>
               <Typography color='primary' variant='subtitle1' textAlign='center'>
                 waiting for your opponent

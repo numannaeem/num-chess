@@ -26,7 +26,7 @@ io.on('connection', async socket => {
   try {
     const { username } = socket.handshake.query
     console.log(username + ' (' + socket.id + ') connected')
-    socket.on('create-room', ({roomName, timeControl}) =>
+    socket.on('create-room', ({ roomName, timeControl }) =>
       createRoom(socket, roomData, roomName, username, timeControl)
     )
     socket.on('join-room', roomName =>

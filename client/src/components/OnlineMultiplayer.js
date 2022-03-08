@@ -79,10 +79,10 @@ function OnlineMultiplayer ({ socket, username }) {
             }
           }
         : game.current?.in_check() && {
-            [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
-              backgroundColor: 'rgba(24,255,186,0.5)'
-            }
-          })
+          [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
+            backgroundColor: 'rgba(24,255,186,0.5)'
+          }
+        })
     }
   }, [gameHistory])
 
@@ -201,7 +201,7 @@ function OnlineMultiplayer ({ socket, username }) {
     })
   }, [socket, username, finishGame, gameOver, black, white])
 
-  //game-over useEffect
+  // game-over useEffect
   useEffect(() => {
     !gameOver && socket?.on('game-over', data => {
       console.log('over')
@@ -259,20 +259,20 @@ function OnlineMultiplayer ({ socket, username }) {
   useEffect(() => {
     const intervalFn = setInterval(() => {
       if (backdropOpen || gameOver) return
-      if (yourTurn) setYourTimer(p => p>0 ? p - 1: p)
-      else if (!yourTurn) setOppTimer(p => p>0 ? p - 1: p)
+      if (yourTurn) setYourTimer(p => p > 0 ? p - 1 : p)
+      else if (!yourTurn) setOppTimer(p => p > 0 ? p - 1 : p)
     }, 1000)
     return () => clearInterval(intervalFn)
   }, [yourTurn, backdropOpen, gameOver])
 
   // handle time-outs useEffect
   useEffect(() => {
-    if(gameOver) return
+    if (gameOver) return
     if (oppTimer <= 0) {
-      console.log('timedout');
+      console.log('timedout')
       socket.emit('timed-out', username) // person who won
     } else if (yourTimer <= 0) {
-      console.log('timedout');
+      console.log('timedout')
       socket.emit(
         'timed-out',
         white.username === username ? black.username : white.username
@@ -479,8 +479,7 @@ function OnlineMultiplayer ({ socket, username }) {
               calcWidth={({ screenWidth, screenHeight }) =>
                 screenHeight < screenWidth
                   ? 0.75 * screenHeight
-                  : 0.95 * screenWidth
-              }
+                  : 0.95 * screenWidth}
               position={fen}
               transitionDuration={20}
               draggable={yourTurn && !gameOver}
