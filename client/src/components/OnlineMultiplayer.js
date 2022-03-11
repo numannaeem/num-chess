@@ -21,6 +21,7 @@ import RematchSnackbar from './RematchSnackbar'
 import { ReactComponent as HandshakeIcon } from '../svgIcons/handshake.svg'
 import { ReactComponent as WhiteFlagIcon } from '../svgIcons/whiteFlag.svg'
 import PlayerInfo from './PlayerInfo'
+import { highlightLastMove } from '../chess/handleMoves'
 
 const checkmateSound = new window.Audio('/sounds/victoryBell.mp3')
 const pieceMoveSound = new window.Audio('/sounds/pieceMove.wav')
@@ -56,36 +57,6 @@ function OnlineMultiplayer ({ socket, username }) {
     // location.state.white contains the data of white player, sent over from WaitingRoom
   )
 
-  const highlightLastMove = useCallback(() => {
-    const fromSquare =
-      gameHistory.length && gameHistory[gameHistory.length - 1].from
-    const toSquare =
-      gameHistory.length && gameHistory[gameHistory.length - 1].to
-    return {
-      ...(gameHistory.length && {
-        [fromSquare]: {
-          backgroundColor: 'rgba(255, 255, 0, 0.4)'
-        }
-      }),
-      ...(gameHistory.length && {
-        [toSquare]: {
-          backgroundColor: 'rgba(255, 255, 0, 0.4)'
-        }
-      }),
-      ...(game.current?.in_checkmate()
-        ? {
-            [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
-              backgroundColor: '#f02e32'
-            }
-          }
-        : game.current?.in_check() && {
-          [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
-            backgroundColor: 'rgba(24,255,186,0.5)'
-          }
-        })
-    }
-  }, [gameHistory])
-
   const finishGame = useCallback(
     move => {
       setGameOver(true)
@@ -100,7 +71,7 @@ function OnlineMultiplayer ({ socket, username }) {
         } else if (game.current.in_stalemate()) {
           setSubtitleText('Draw by stalemate')
         } else if (game.current.insufficient_material()) {
-          setSubtitleText('Draw by insuffiicient material')
+          setSubtitleText('Draw by insufficient material')
         } else if (game.current.in_threefold_repetition()) {
           setSubtitleText('Draw by threefold repetition')
         }
@@ -127,8 +98,8 @@ function OnlineMultiplayer ({ socket, username }) {
   // useEffect to highlight last move
   useEffect(() => {
     if (!game.current?.in_checkmate()) pieceMoveSound?.play()
-    setSquareStyles(highlightLastMove())
-  }, [gameHistory, highlightLastMove])
+    setSquareStyles(highlightLastMove(gameHistory, game))
+  }, [gameHistory])
 
   // main socket useEffect
   useEffect(() => {
@@ -280,22 +251,7 @@ function OnlineMultiplayer ({ socket, username }) {
     }
   }, [yourTimer, oppTimer, socket, username, gameOver])
 
-  const getPiecePosition = piece => {
-    return []
-      .concat(...game.current.board())
-      .map((p, index) => {
-        if (p !== null && p.type === piece.type && p.color === piece.color) {
-          return index
-        }
-        return null
-      })
-      .filter(Number.isInteger)
-      .map(pieceIndex => {
-        const row = 'abcdefgh'[pieceIndex % 8]
-        const column = Math.ceil((64 - pieceIndex) / 8)
-        return row + column
-      })
-  }
+
 
   const onDrop = ({ sourceSquare, targetSquare }) => {
     let gameWinner = null
@@ -337,7 +293,7 @@ function OnlineMultiplayer ({ socket, username }) {
       let gameWinner = null
       setPieceSquare(square)
       const validMoves = game.current.moves({ square, verbose: true })
-      const moves = highlightLastMove() || {}
+      const moves = highlightLastMove(gameHistory, game) || {}
       moves[validMoves[0]?.from] = { backgroundColor: 'rgba(255,255,0,0.4)' }
       validMoves.forEach(m => {
         moves[m.to] = {
@@ -478,7 +434,7 @@ function OnlineMultiplayer ({ socket, username }) {
               undo
               calcWidth={({ screenWidth, screenHeight }) =>
                 screenHeight < screenWidth
-                  ? 0.75 * screenHeight
+                  ? 0.70 * screenHeight
                   : 0.95 * screenWidth}
               position={fen}
               transitionDuration={20}

@@ -94,7 +94,7 @@ function HomeComponent ({
             onEntered={() => setEntered(2)}
             timeout={{ enter: 200, exit: 100 }}
           >
-            <Stack py={5} spacing={1} alignItems='center'>
+            <Stack pt={5} pb={4} spacing={1} alignItems='center'>
               <Button
                 color='primary'
                 type='submit'

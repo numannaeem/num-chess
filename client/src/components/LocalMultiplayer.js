@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import GameOverModal from './GameOverModal'
 import NavBar from './NavBar'
+import { highlightLastMove } from '../chess/handleMoves'
 
 const checkmateSound = new window.Audio('/sounds/victoryBell.mp3')
 const pieceMoveSound = new window.Audio('/sounds/pieceMove.wav')
@@ -40,54 +41,16 @@ function LocalMultiplayer () {
     setAlertOpen(false)
   }
 
-  const highlightLastMove = useCallback(() => {
-    const fromSquare =
-      gameHistory.length && gameHistory[gameHistory.length - 1].from
-    const toSquare =
-      gameHistory.length && gameHistory[gameHistory.length - 1].to
-    return {
-      ...(gameHistory.length && {
-        [fromSquare]: {
-          backgroundColor: 'rgba(255, 255, 0, 0.4)'
-        }
-      }),
-      ...(gameHistory.length && {
-        [toSquare]: {
-          backgroundColor: 'rgba(255, 255, 0, 0.4)'
-        }
-      }),
-      ...(game.current?.in_checkmate()
-        ? {
-            [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
-              backgroundColor: '#f02e32'
-            }
-          }
-        : game.current?.in_check() && {
-          [getPiecePosition({ type: 'k', color: game.current.turn() })]: {
-            backgroundColor: 'rgba(24,255,186,0.5)'
-          }
-        })
-    }
-  }, [gameHistory])
-
   useEffect(() => {
     if (!game.current?.in_checkmate()) pieceMoveSound?.play()
-    setSquareStyles(highlightLastMove())
-  }, [gameHistory, highlightLastMove])
+    setSquareStyles(highlightLastMove(gameHistory, game))
+  }, [gameHistory])
 
   const finishGame = useCallback(move => {
     setGameOver(true)
+    setOverModalOpen(true)
+    checkmateSound?.play()
     if (game.current.in_checkmate()) {
-      checkmateSound?.play()
-      const kingPosition = getPiecePosition({
-        type: 'k',
-        color: move.color === 'w' ? 'b' : 'w'
-      })
-      setSquareStyles({
-        [kingPosition]: {
-          backgroundColor: '#f02e32'
-        }
-      })
       setGameWinner(move.color === 'b' ? 'Black' : 'White')
       setSubtitleText('Win by checkmate')
     } else if (game.current.in_stalemate()) {
@@ -97,25 +60,7 @@ function LocalMultiplayer () {
       setGameWinner('draw')
       setSubtitleText('Draw by insufficient material/threefold repetition')
     }
-    setOverModalOpen(true)
   }, [])
-
-  const getPiecePosition = piece => {
-    return []
-      .concat(...game.current.board())
-      .map((p, index) => {
-        if (p !== null && p.type === piece.type && p.color === piece.color) {
-          return index
-        }
-        return null
-      })
-      .filter(Number.isInteger)
-      .map(pieceIndex => {
-        const row = 'abcdefgh'[pieceIndex % 8]
-        const column = Math.ceil((64 - pieceIndex) / 8)
-        return row + column
-      })
-  }
 
   useEffect(() => {
     if (!game.current) {
@@ -140,20 +85,6 @@ function LocalMultiplayer () {
       finishGame(move)
       return
     }
-
-    if (game.current.in_check()) {
-      const kingPosition = getPiecePosition({
-        type: 'k',
-        color: move.color === 'w' ? 'b' : 'w'
-      })
-      setSquareStyles({
-        [kingPosition]: {
-          backgroundColor: 'rgba(24,255,186,0.6)'
-        }
-      })
-    } else {
-      setSquareStyles({})
-    }
   }
 
   const onSquareClick = square => {
@@ -161,11 +92,6 @@ function LocalMultiplayer () {
       setPieceSquare(square)
       const validMoves = game.current.moves({ square, verbose: true })
       const moves = {}
-      if (game.current.in_check()) {
-        moves[getPiecePosition({ type: 'k', color: game.current.turn() })] = {
-          backgroundColor: 'rgba(24,255,186,0.6)'
-        }
-      }
       moves[validMoves[0]?.from] = { backgroundColor: 'rgba(255,255,0,0.4)' }
       validMoves.forEach(m => {
         moves[m.to] = {
@@ -191,18 +117,6 @@ function LocalMultiplayer () {
         finishGame(move)
         return
       }
-
-      if (game.current.in_check()) {
-        const kingPosition = getPiecePosition({
-          type: 'k',
-          color: move.color === 'w' ? 'b' : 'w'
-        })
-        setSquareStyles({
-          [kingPosition]: {
-            backgroundColor: 'rgba(24,255,186,0.6)'
-          }
-        })
-      }
     }
   }
 
@@ -227,7 +141,7 @@ function LocalMultiplayer () {
             undo
             calcWidth={({ screenWidth, screenHeight }) =>
               screenHeight < screenWidth
-                ? 0.75 * screenHeight
+                ? 0.70 * screenHeight
                 : 0.95 * screenWidth}
             position={fen}
             transitionDuration={50}

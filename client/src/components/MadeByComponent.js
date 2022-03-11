@@ -1,24 +1,27 @@
 import { ExpandLessRounded } from '@mui/icons-material'
 import { Box, Link, Typography } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 function MadeByComponent () {
-  const [opened, setOpened] = useState(false)
+  const [opened, setOpened] = useState({ open: true, touched: false })
+
+  useEffect(() => {
+    const interval = opened.touched === false ? setTimeout(() => setOpened(false), 3000) : null
+    return () => clearTimeout(interval)
+  }, [opened])
   return (
     <>
       <Box
         display='flex'
         alignItems='center'
         justifyContent='center'
-        className={!opened && 'bounce'}
-
       >
         <ExpandLessRounded
           onClick={() => setOpened(p => !p)}
           sx={{
             color: theme => theme.palette.text.primary,
-            transform: opened ? 'rotate(180deg)' : ' translateY(140%)',
-            transition: 'transform 200ms',
+            transform: opened ? 'rotate(180deg)' : ' translateY(145%)',
+            transition: 'transform 400ms',
             cursor: 'pointer'
           }}
         />
@@ -26,7 +29,7 @@ function MadeByComponent () {
       <Box
         sx={{
           transform: opened ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 200ms ease-out'
+          transition: 'transform 400ms ease-out'
         }}
         position='relative'
         py={1}
@@ -40,7 +43,7 @@ function MadeByComponent () {
             target='_blank'
             sx={{
               '&:hover': {
-                color: (theme) => theme.palette.text.secondary
+                color: theme => theme.palette.text.secondary
               }
             }}
             color='inherit'
