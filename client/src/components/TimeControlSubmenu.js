@@ -33,7 +33,7 @@ function TimeControlSubmenu ({ setTimeControlMenu }) {
           textTransform='uppercase'
           color='primary.main'
         >
-          Choose time control
+          Time control
         </Typography>
       </Stack>
       <Button

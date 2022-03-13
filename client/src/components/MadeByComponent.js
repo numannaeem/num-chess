@@ -33,7 +33,7 @@ function MadeByComponent () {
         }}
         position='relative'
         py={1}
-        px={3}
+        px={4}
         borderRadius='16px 16px 0 0'
         bgcolor='rgba(155, 155, 155, 0.2)'
       >
@@ -50,8 +50,10 @@ function MadeByComponent () {
             href='https://www.github.com/numannaeem'
             rel='noreferrer'
           >
-            Numan Naeem<span className='wave'>&nbsp;👋</span>
+            Numan Naeem
           </Link>
+          {' '}
+          <span className='wave'>👋</span>
         </Typography>
       </Box>
     </>

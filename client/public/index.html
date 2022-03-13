@@ -6,7 +6,8 @@
   <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#121212" />
-  <meta name="description" content="Play chess online for free on NumChess. No login required! Create a room and play with your friends, or get matched against a random opponent!" />
+  <meta name="description"
+    content="Play chess online for free on NumChess. No login required! Create a room and play with your friends, or get matched against a random opponent!" />
   <meta property="og:title" content="Play chess online at NumChess" />
   <meta property="og:description"
     content="Play chess online for free on NumChess. No login required! Create a room and play with your friends, or get matched against a random opponent!" />
@@ -23,6 +24,8 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" /> -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;400;600;800&display=swap">
 
   <title>NumChess</title>
 </head>
@@ -30,17 +33,27 @@
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="root"></div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('serviceWorker.js').then(function (registration) {
+          // Registration was successful
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function (err) {
+          // registration failed :(
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script>
 </body>
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;400;600;800&display=swap">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ26MSJM6X"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-LZ26MSJM6X');
-    </script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+
+  gtag('config', 'G-LZ26MSJM6X');
+</script>
 
 </html>

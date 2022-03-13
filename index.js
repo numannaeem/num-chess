@@ -180,6 +180,7 @@ io.on('connection', async socket => {
 })
 
 app.use((req, res, next) => {
+  res.set('Cache-Control', 'public, max-age=31557600');
   res.sendFile(path.resolve(__dirname, './client/build', 'index.html'))
 })
 

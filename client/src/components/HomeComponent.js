@@ -22,7 +22,6 @@ import MadeByComponent from './MadeByComponent'
 
 function HomeComponent ({
   toast,
-  socket,
   setTheme,
   theme,
   setUsername,
@@ -61,7 +60,7 @@ function HomeComponent ({
       height='100vh'
       overflow='hidden'
       sx={{
-        transition: 'background-color 200ms ease-out'
+        transition: 'background-color 200ms ease-in-out'
       }}
       px={3}
       bgcolor='background.paper'
@@ -139,6 +138,7 @@ function HomeComponent ({
                         disabled={roomName.length !== 6}
                         onClick={handleSubmit}
                         edge='end'
+                        title='Join'
                       >
                         <ArrowIcon />
                       </IconButton>
