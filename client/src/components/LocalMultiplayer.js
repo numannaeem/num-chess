@@ -83,40 +83,43 @@ function LocalMultiplayer () {
 
     if (game.current.game_over()) {
       finishGame(move)
-      return
     }
   }
 
   const onSquareClick = square => {
-    if (!gameOver) {
-      setPieceSquare(square)
-      const validMoves = game.current.moves({ square, verbose: true })
-      const moves = {}
-      moves[validMoves[0]?.from] = { backgroundColor: 'rgba(255,255,0,0.4)' }
-      validMoves.forEach(m => {
-        moves[m.to] = {
-          background: m.captured
-            ? 'radial-gradient(circle, rgba(0,0,0,0) 48%, rgba(0,0,0,0.2) 54%, rgba(0,0,0,0.2) 66%, rgba(0,0,0,0) 71%)'
-            : 'radial-gradient(circle, rgba(0,0,0,0.2) 35%, transparent 40%)'
-        }
-      })
-      setSquareStyles(moves)
-      const move = game.current.move({
-        from: pieceSquare,
-        to: square,
-        promotion: 'q'
-      })
+    if (gameOver) return
+    if (square === pieceSquare) {
+      setPieceSquare(null)
+      setSquareStyles(highlightLastMove(gameHistory, game) || {})
+      return
+    }
 
-      // illegal move
-      if (move === null) return
-      setGameHistory(game.current.history({ verbose: true }))
-      setFen(game.current.fen())
-      setPieceSquare('')
-
-      if (game.current.game_over()) {
-        finishGame(move)
-        return
+    const validMoves = game.current.moves({ square, verbose: true })
+    const moves = highlightLastMove(gameHistory, game) || {}
+    moves[square] = { backgroundColor: 'rgba(255,255,0,0.4)' }
+    validMoves.forEach(m => {
+      moves[m.to] = {
+        background: m.captured
+          ? 'radial-gradient(circle, rgba(0,0,0,0) 48%, rgba(0,0,0,0.2) 54%, rgba(0,0,0,0.2) 66%, rgba(0,0,0,0) 71%)'
+          : 'radial-gradient(circle, rgba(0,0,0,0.2) 35%, transparent 40%)'
       }
+    })
+    setSquareStyles(moves)
+    const move = game.current.move({
+      from: pieceSquare,
+      to: square,
+      promotion: 'q'
+    })
+    setPieceSquare(square)
+
+    // illegal move
+    if (move === null) return
+    setGameHistory(game.current.history({ verbose: true }))
+    setFen(game.current.fen())
+    setPieceSquare('')
+
+    if (game.current.game_over()) {
+      finishGame(move)
     }
   }
 
@@ -141,7 +144,7 @@ function LocalMultiplayer () {
             undo
             calcWidth={({ screenWidth, screenHeight }) =>
               screenHeight < screenWidth
-                ? 0.70 * screenHeight
+                ? 0.7 * screenHeight
                 : 0.95 * screenWidth}
             position={fen}
             transitionDuration={50}

@@ -174,28 +174,29 @@ function OnlineMultiplayer ({ socket, username }) {
 
   // game-over useEffect
   useEffect(() => {
-    !gameOver && socket?.on('game-over', data => {
-      console.log('over')
-      if (data.timedOut) {
-        finishGame()
-        setGameWinner(data.winner)
-        const subText = `${
-          data.winner === black.username ? 'White' : 'Black'
-        } ran out of time`
-        if (data.winner === username) {
-          setOppTimer(0)
-        } else {
-          setYourTimer(0)
+    !gameOver &&
+      socket?.on('game-over', data => {
+        console.log('over')
+        if (data.timedOut) {
+          finishGame()
+          setGameWinner(data.winner)
+          const subText = `${
+            data.winner === black.username ? 'White' : 'Black'
+          } ran out of time`
+          if (data.winner === username) {
+            setOppTimer(0)
+          } else {
+            setYourTimer(0)
+          }
+          setSubtitleText(subText)
+          return
         }
-        setSubtitleText(subText)
-        return
-      }
-      const move = game.current.move(data.move)
-      setGameHistory(game.current.history({ verbose: true }))
-      setFen(game.current.fen())
-      finishGame(move)
-      setGameWinner(data.winner)
-    })
+        const move = game.current.move(data.move)
+        setGameHistory(game.current.history({ verbose: true }))
+        setFen(game.current.fen())
+        finishGame(move)
+        setGameWinner(data.winner)
+      })
   }, [black, finishGame, socket, username, gameOver])
 
   // accept rematch useEffect
@@ -230,8 +231,8 @@ function OnlineMultiplayer ({ socket, username }) {
   useEffect(() => {
     const intervalFn = setInterval(() => {
       if (backdropOpen || gameOver) return
-      if (yourTurn) setYourTimer(p => p > 0 ? p - 1 : p)
-      else if (!yourTurn) setOppTimer(p => p > 0 ? p - 1 : p)
+      if (yourTurn) setYourTimer(p => (p > 0 ? p - 1 : p))
+      else if (!yourTurn) setOppTimer(p => (p > 0 ? p - 1 : p))
     }, 1000)
     return () => clearInterval(intervalFn)
   }, [yourTurn, backdropOpen, gameOver])
@@ -250,8 +251,6 @@ function OnlineMultiplayer ({ socket, username }) {
       )
     }
   }, [yourTimer, oppTimer, socket, username, gameOver])
-
-
 
   const onDrop = ({ sourceSquare, targetSquare }) => {
     let gameWinner = null
@@ -289,54 +288,58 @@ function OnlineMultiplayer ({ socket, username }) {
   }
 
   const onSquareClick = square => {
-    if (!gameOver) {
-      let gameWinner = null
-      setPieceSquare(square)
-      const validMoves = game.current.moves({ square, verbose: true })
-      const moves = highlightLastMove(gameHistory, game) || {}
-      moves[validMoves[0]?.from] = { backgroundColor: 'rgba(255,255,0,0.4)' }
-      validMoves.forEach(m => {
-        moves[m.to] = {
-          background: m.captured
-            ? 'radial-gradient(circle, rgba(0,0,0,0) 48%, rgba(0,0,0,0.2) 54%, rgba(0,0,0,0.2) 66%, rgba(0,0,0,0) 71%)'
-            : 'radial-gradient(circle, rgba(0,0,0,0.2) 35%, transparent 40%)'
-        }
-      })
-      const move = game.current.move({
+    if (!yourTurn || gameOver) return
+    if (pieceSquare === square) {
+      setPieceSquare(null)
+      setSquareStyles(highlightLastMove(gameHistory, game) || {})
+      return
+    }
+    let gameWinner = null
+    const validMoves = game.current.moves({ square, verbose: true })
+    const moves = highlightLastMove(gameHistory, game) || {}
+    moves[square] = { backgroundColor: 'rgba(255,255,0,0.4)' }
+    validMoves.forEach(m => {
+      moves[m.to] = {
+        background: m.captured
+          ? 'radial-gradient(circle, rgba(0,0,0,0) 48%, rgba(0,0,0,0.2) 54%, rgba(0,0,0,0.2) 66%, rgba(0,0,0,0) 71%)'
+          : 'radial-gradient(circle, rgba(0,0,0,0.2) 35%, transparent 40%)'
+      }
+    })
+    const move = game.current.move({
+      from: pieceSquare,
+      to: square,
+      promotion: 'q'
+    })
+    setPieceSquare(square)
+    setSquareStyles(moves)
+
+    if (move === null) {
+      return
+    }
+    setGameHistory(game.current.history({ verbose: true }))
+    setFen(game.current.fen())
+    setPieceSquare('')
+
+    if (game.current.game_over()) {
+      gameWinner = finishGame(move)
+      setGameWinner(gameWinner)
+    }
+
+    socket.emit('played', {
+      fen: game.current.fen(),
+      result: gameWinner,
+      move: {
         from: pieceSquare,
         to: square,
         promotion: 'q'
-      })
-
-      if (move === null) {
-        setSquareStyles(moves)
-        return
+      },
+      timeLeft: {
+        white: username === white.username ? yourTimer : oppTimer,
+        black: username === black.username ? yourTimer : oppTimer
       }
-      setGameHistory(game.current.history({ verbose: true }))
-      setFen(game.current.fen())
-      setPieceSquare('')
+    })
 
-      if (game.current.game_over()) {
-        gameWinner = finishGame(move)
-        setGameWinner(gameWinner)
-      }
-
-      socket.emit('played', {
-        fen: game.current.fen(),
-        result: gameWinner,
-        move: {
-          from: pieceSquare,
-          to: square,
-          promotion: 'q'
-        },
-        timeLeft: {
-          white: username === white.username ? yourTimer : oppTimer,
-          black: username === black.username ? yourTimer : oppTimer
-        }
-      })
-
-      setYourTurn(false)
-    }
+    setYourTurn(false)
   }
 
   const offerDraw = () => {
@@ -434,7 +437,7 @@ function OnlineMultiplayer ({ socket, username }) {
               undo
               calcWidth={({ screenWidth, screenHeight }) =>
                 screenHeight < screenWidth
-                  ? 0.70 * screenHeight
+                  ? 0.7 * screenHeight
                   : 0.95 * screenWidth}
               position={fen}
               transitionDuration={20}

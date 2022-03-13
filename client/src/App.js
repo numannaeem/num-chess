@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import HomeComponent from './components/HomeComponent'
 import LocalMultiplayer from './components/LocalMultiplayer'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { ToastContainer, toast, Flip } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -14,8 +14,12 @@ import { Box, Typography } from '@mui/material'
 import Matchmaking from './components/Matchmaking'
 
 function App () {
-  const [username, setUsername] = useState(window.localStorage.getItem('username'))
-  const [themeMode, setThemeMode] = useState(window.localStorage.getItem('themeMode') || 'dark')
+  const [username, setUsername] = useState(
+    window.localStorage.getItem('username')
+  )
+  const [themeMode, setThemeMode] = useState(
+    window.localStorage.getItem('themeMode') || 'dark'
+  )
   const [socket, setSocket] = useState(null)
 
   const theme = createTheme({
@@ -25,22 +29,6 @@ function App () {
     typography: {
       fontFamily: 'JetBrains Mono, monospace'
     }
-    // components: {
-    //   MuiLinearProgress: {
-    //     styleOverrides: {
-    //       root: ({ ownerState, theme }) => ({
-    //         ...(ownerState.disabled && {
-    //           backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[500]
-    //         })
-    //       }),
-    //       bar: ({ ownerState, theme }) => ({
-    //         ...(ownerState.disabled && {
-    //           backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[500] : theme.palette.grey[800]
-    //         })
-    //       })
-    //     }
-    //   }
-    // }
   })
 
   useEffect(() => {
@@ -71,7 +59,7 @@ function App () {
     })
   }, [socket])
 
-  const ErrorToast = ({ closeToast, toastProps }) => {
+  const ErrorToast = () => {
     return (
       <Box>
         <Typography fontWeight='bolder'>Something went wrong!</Typography>
@@ -81,26 +69,47 @@ function App () {
       </Box>
     )
   }
-
-  if (!username) {
-    return (
-      <ThemeProvider theme={theme}>
-        <NameScreen setOuterUsername={setUsername} toast={toast} />
-      </ThemeProvider>
-    )
-  }
   return (
     <ThemeProvider theme={theme}>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<HomeComponent theme={themeMode} username={username} setUsername={setUsername} setTheme={setThemeMode} toast={toast} socket={socket} />} />
-          <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
-          <Route path='/room' element={<WaitingRoom socket={socket} />} />
-          <Route path='/matchmake' element={<Matchmaking socket={socket} />} />
-          {socket && <Route path='/online-multiplayer' element={<OnlineMultiplayer username={username} socket={socket} />} />}
-        </Routes>
-        <ToastContainer transition={Flip} />
-      </BrowserRouter>
+      {!username
+        ? (
+          <NameScreen setOuterUsername={setUsername} toast={toast} />
+          )
+        : (
+          <BrowserRouter>
+            <Routes>
+              <Route
+                path='/'
+                element={
+                  <HomeComponent
+                    theme={themeMode}
+                    username={username}
+                    setUsername={setUsername}
+                    setTheme={setThemeMode}
+                    toast={toast}
+                    socket={socket}
+                  />
+              }
+              />
+              <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
+              <Route path='/room' element={<WaitingRoom socket={socket} />} />
+              <Route
+                path='/matchmake'
+                element={<Matchmaking socket={socket} />}
+              />
+              {socket && (
+                <Route
+                  path='/online-multiplayer'
+                  element={
+                    <OnlineMultiplayer username={username} socket={socket} />
+                }
+                />
+              )}
+              <Route path='*' element={<Navigate to='/' replace />} />
+            </Routes>
+            <ToastContainer transition={Flip} />
+          </BrowserRouter>
+          )}
     </ThemeProvider>
   )
 }

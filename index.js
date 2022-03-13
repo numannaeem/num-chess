@@ -17,6 +17,9 @@ app.use((req, res, next) => {
 })
 app.use(express.json()) // used to parse json requests
 app.use(express.static(path.resolve(__dirname, './client/build')))
+app.use((req, res, next) => {
+  res.sendFile(path.resolve(__dirname, './client/build', 'index.html'))
+})
 
 const roomData = {}
 const matchmakingRooms = []
@@ -177,11 +180,6 @@ io.on('connection', async socket => {
       .to(socket.id)
       .emit('error-occurred', err)
   }
-})
-
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'public, max-age=31557600');
-  res.sendFile(path.resolve(__dirname, './client/build', 'index.html'))
 })
 
 server.listen(process.env.PORT || 5000, err => {
