@@ -19,13 +19,15 @@ import { ReactComponent as Logo } from '../svgIcons/knightLogo.svg'
 import SettingsSubmenu from './SettingsSubmenu'
 import TimeControlSubmenu from './TimeControlSubmenu'
 import MadeByComponent from './MadeByComponent'
+import { WarningRounded } from '@mui/icons-material'
 
 function HomeComponent ({
   toast,
   setTheme,
   theme,
   setUsername,
-  username
+  username,
+  online
 }) {
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
@@ -77,7 +79,14 @@ function HomeComponent ({
           >
             <Typography variant='h3' fontWeight={600} color='primary'>
               NumChess
-              <SvgIcon className='logo' sx={{ marginLeft: 1, filter: 'drop-shadow(1px 1px 1px rgba(0, 0, 0, .7))' }} fontSize='inherit'>
+              <SvgIcon
+                className='logo'
+                sx={{
+                  marginLeft: 1,
+                  filter: 'drop-shadow(1px 1px 1px rgba(0, 0, 0, .7))'
+                }}
+                fontSize='inherit'
+              >
                 <Logo />
               </SvgIcon>
             </Typography>
@@ -98,64 +107,91 @@ function HomeComponent ({
                 color='primary'
                 type='submit'
                 variant='outlined'
-                sx={hoverStyles('"⚔️"')}
+                sx={hoverStyles('"🧑🏻‍🤝‍🧑🏽"')}
                 onClick={() => navigate('local-multiplayer')}
               >
-                Local multiplayer
+                Pass and Play
               </Button>
-              <Divider variant='middle' />
-              <Button
-                onClick={() => setTimeControlMenu(true)}
-                color='secondary'
-                type='submit'
-                variant='outlined'
-                sx={hoverStyles('"➕"')}
-              >
-                Create Room
-              </Button>
-              <TextField
-                onKeyDown={e =>
-                  e.key === 'Enter' && roomName.length === 6 && handleSubmit()}
-                color='secondary'
-                variant='outlined'
-                size='small'
-                label='Join Room'
-                value={roomName}
-                autoComplete='off'
-                onChange={e => {
-                  if (
-                    e.target.value.match(/^[0-9a-zA-Z]*$/) &&
-                    e.target.value.length <= 6
-                  ) {
-                    setRoomName(e.target.value.toUpperCase())
-                  }
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton
-                        color='secondary'
-                        disabled={roomName.length !== 6}
-                        onClick={handleSubmit}
-                        edge='end'
-                        title='Join'
-                      >
-                        <ArrowIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-              />
+              <Divider />
+              {online ? (
+                <>
+                  <Button
+                    onClick={() => setTimeControlMenu(true)}
+                    color='secondary'
+                    type='submit'
+                    variant='outlined'
+                    sx={hoverStyles('"➕"')}
+                  >
+                    Create Room
+                  </Button>
+                  <TextField
+                    onKeyDown={e =>
+                      e.key === 'Enter' &&
+                      roomName.length === 6 &&
+                      handleSubmit()
+                    }
+                    color='secondary'
+                    variant='outlined'
+                    size='small'
+                    label='Join Room'
+                    value={roomName}
+                    autoComplete='off'
+                    onChange={e => {
+                      if (
+                        e.target.value.match(/^[0-9a-zA-Z]*$/) &&
+                        e.target.value.length <= 6
+                      ) {
+                        setRoomName(e.target.value.toUpperCase())
+                      }
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton
+                            color='secondary'
+                            disabled={roomName.length !== 6}
+                            onClick={handleSubmit}
+                            edge='end'
+                            title='Join'
+                          >
+                            <ArrowIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
 
-              <Button
-                onClick={() => navigate('matchmake')}
-                color='secondary'
-                type='submit'
-                variant='outlined'
-                sx={hoverStyles('"🔎"')}
-              >
-                Find Game
-              </Button>
+                  <Button
+                    onClick={() => navigate('matchmake')}
+                    color='secondary'
+                    type='submit'
+                    variant='outlined'
+                    sx={hoverStyles('"🔎"')}
+                  >
+                    Find Game
+                  </Button>
+                </>
+              ) : (
+                <Stack
+                  alignItems={'center'}
+                  borderRadius={1}
+                  border={'1px solid'}
+                  borderColor='text.secondary'
+                  boxSizing={'border-box'}
+                  p={2}
+                  color={'text.secondary'}
+                  textAlign='center'
+                  maxWidth={'300px'}
+                >
+                  <WarningRounded />
+                  <Typography fontSize={'0.9rem'} variant='overline'>
+                    No network connection :(
+                  </Typography>
+                  <Typography variant='caption'>
+                    Connect to the internet to play online
+                  </Typography>
+                </Stack>
+              )}
               <Divider />
 
               <Button
@@ -195,9 +231,7 @@ function HomeComponent ({
             timeout={{ enter: 200, exit: 100 }}
           >
             <Box width='100%' top='0' position='absolute'>
-              <TimeControlSubmenu
-                setTimeControlMenu={setTimeControlMenu}
-              />
+              <TimeControlSubmenu setTimeControlMenu={setTimeControlMenu} />
             </Box>
           </Slide>
         </Box>

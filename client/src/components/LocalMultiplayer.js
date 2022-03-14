@@ -29,6 +29,7 @@ function LocalMultiplayer () {
   const [gameWinner, setGameWinner] = useState(null)
   const [overModalOpen, setOverModalOpen] = useState(false)
   const [subtitleText, setSubtitleText] = useState('')
+  const [autoFlip, setAutoFlip] = useState(false)
 
   const game = useRef(null)
 
@@ -145,9 +146,17 @@ function LocalMultiplayer () {
             calcWidth={({ screenWidth, screenHeight }) =>
               screenHeight < screenWidth
                 ? 0.7 * screenHeight
-                : 0.95 * screenWidth}
+                : 0.95 * screenWidth
+            }
+            orientation={
+              !autoFlip
+                ? 'white'
+                : game.current.turn() === 'b'
+                ? 'black'
+                : 'white'
+            }
             position={fen}
-            transitionDuration={50}
+            transitionDuration={10}
             draggable={!gameOver}
             onDrop={onDrop}
             boardStyle={{
@@ -163,22 +172,29 @@ function LocalMultiplayer () {
             lightSquareStyle={{ backgroundColor: 'rgb(240, 217, 181)' }}
           />
 
-          <ButtonGroup sx={{ marginBlock: '8px' }}>
+          <Stack sx={{ margin: 1 }} gap={1} direction={{xs: 'column', md: 'row'}}>
             {!gameOver && (
-              <Button
-                // sx={{ marginRight: '2px' }}
-                disabled={gameHistory.length === 0}
-                variant='outlined'
-                color='primary'
-                onClick={() => {
-                  game.current.undo()
-                  setSquareStyles({})
-                  setGameHistory(game.current.history({ verbose: true }))
-                  setFen(game.current.fen())
-                }}
-              >
-                undo move
-              </Button>
+              <ButtonGroup>
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  onClick={() => setAutoFlip(p => !p)}
+                >
+                  {`${autoFlip ? 'Disable' : 'Enable'} auto-flip`}
+                </Button>
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  onClick={() => {
+                    game.current.undo()
+                    setSquareStyles({})
+                    setGameHistory(game.current.history({ verbose: true }))
+                    setFen(game.current.fen())
+                  }}
+                >
+                  undo last move
+                </Button>
+              </ButtonGroup>
             )}
             <Button
               // sx={{ marginLeft: '2px' }}
@@ -189,7 +205,7 @@ function LocalMultiplayer () {
             >
               restart game
             </Button>
-          </ButtonGroup>
+          </Stack>
         </Stack>
       </Stack>
       <Dialog open={alertOpen} onClose={() => setAlertOpen(false)}>

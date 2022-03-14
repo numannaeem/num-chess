@@ -21,6 +21,7 @@ function App () {
     window.localStorage.getItem('themeMode') || 'dark'
   )
   const [socket, setSocket] = useState(null)
+  const [online, setOnline] = useState(window.navigator.onLine)
 
   const theme = createTheme({
     palette: {
@@ -42,6 +43,17 @@ function App () {
 
     return () => newSocket.close()
   }, [username])
+
+  useEffect(() => {
+    const handleOnline = () => setOnline(true)
+    const handleOffline = () => setOnline(false)
+    window.addEventListener('offline', handleOffline)
+    window.addEventListener('online', handleOnline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   useEffect(() => {
     socket?.on('error-occurred', () => {
@@ -71,45 +83,48 @@ function App () {
   }
   return (
     <ThemeProvider theme={theme}>
-      {!username
-        ? (
-          <NameScreen setOuterUsername={setUsername} toast={toast} />
-          )
-        : (
-          <BrowserRouter>
-            <Routes>
-              <Route
-                path='/'
-                element={
-                  <HomeComponent
-                    theme={themeMode}
-                    username={username}
-                    setUsername={setUsername}
-                    setTheme={setThemeMode}
-                    toast={toast}
-                    socket={socket}
-                  />
+      {!username ? (
+        <NameScreen setOuterUsername={setUsername} toast={toast} />
+      ) : (
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path='/'
+              element={
+                <HomeComponent
+                  online={online}
+                  theme={themeMode}
+                  username={username}
+                  setUsername={setUsername}
+                  setTheme={setThemeMode}
+                  toast={toast}
+                  socket={socket}
+                />
               }
-              />
-              <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
+            />
+            <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
+            {online && (
               <Route path='/room' element={<WaitingRoom socket={socket} />} />
+            )}
+            {online && (
               <Route
                 path='/matchmake'
                 element={<Matchmaking socket={socket} />}
               />
-              {socket && (
-                <Route
-                  path='/online-multiplayer'
-                  element={
-                    <OnlineMultiplayer username={username} socket={socket} />
+            )}
+            {socket && (
+              <Route
+                path='/online-multiplayer'
+                element={
+                  <OnlineMultiplayer username={username} socket={socket} />
                 }
-                />
-              )}
-              <Route path='*' element={<Navigate to='/' replace />} />
-            </Routes>
-            <ToastContainer transition={Flip} />
-          </BrowserRouter>
-          )}
+              />
+            )}
+            <Route path='*' element={<Navigate to='/' replace />} />
+          </Routes>
+          <ToastContainer transition={Flip} />
+        </BrowserRouter>
+      )}
     </ThemeProvider>
   )
 }
