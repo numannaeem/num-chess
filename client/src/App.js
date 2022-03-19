@@ -20,6 +20,7 @@ function App () {
   const [themeMode, setThemeMode] = useState(
     window.localStorage.getItem('themeMode') || 'dark'
   )
+  const [sound, setSound] = useState(window.localStorage.getItem('sound') === 'false' ? false : true)
   const [socket, setSocket] = useState(null)
   const [online, setOnline] = useState(window.navigator.onLine)
 
@@ -99,10 +100,12 @@ function App () {
                   setTheme={setThemeMode}
                   toast={toast}
                   socket={socket}
+                  sound={sound}
+                  setSound={setSound}
                 />
               }
             />
-            <Route path='/local-multiplayer' element={<LocalMultiplayer />} />
+            <Route path='/local-multiplayer' element={<LocalMultiplayer sound={sound} />} />
             {online && (
               <Route path='/room' element={<WaitingRoom socket={socket} />} />
             )}
@@ -116,7 +119,7 @@ function App () {
               <Route
                 path='/online-multiplayer'
                 element={
-                  <OnlineMultiplayer username={username} socket={socket} />
+                  <OnlineMultiplayer sound={sound} username={username} socket={socket} />
                 }
               />
             )}

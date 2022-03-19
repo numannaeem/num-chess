@@ -27,7 +27,9 @@ function HomeComponent ({
   theme,
   setUsername,
   username,
-  online
+  online,
+  sound,
+  setSound
 }) {
   const [roomName, setRoomName] = useState('')
   const [entered, setEntered] = useState(false)
@@ -219,6 +221,8 @@ function HomeComponent ({
                 setUsername={setUsername}
                 theme={theme}
                 username={username}
+                sound={sound}
+                setSound={setSound}
                 setSettingsMenu={setSettingsMenu}
               />
             </Box>

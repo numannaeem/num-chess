@@ -18,7 +18,7 @@ import { highlightLastMove } from '../chess/handleMoves'
 const checkmateSound = new window.Audio('/sounds/victoryBell.mp3')
 const pieceMoveSound = new window.Audio('/sounds/pieceMove.wav')
 
-function LocalMultiplayer () {
+function LocalMultiplayer ({sound}) {
   const [fen, setFen] = useState('start')
   const [gameHistory, setGameHistory] = useState([])
   const [alertOpen, setAlertOpen] = useState(false)
@@ -43,14 +43,14 @@ function LocalMultiplayer () {
   }
 
   useEffect(() => {
-    if (!game.current?.in_checkmate()) pieceMoveSound?.play()
+    if (!game.current?.in_checkmate() && sound) pieceMoveSound?.play()
     setSquareStyles(highlightLastMove(gameHistory, game))
   }, [gameHistory])
 
   const finishGame = useCallback(move => {
     setGameOver(true)
     setOverModalOpen(true)
-    checkmateSound?.play()
+    if(sound) checkmateSound?.play()
     if (game.current.in_checkmate()) {
       setGameWinner(move.color === 'b' ? 'Black' : 'White')
       setSubtitleText('Win by checkmate')

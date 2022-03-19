@@ -26,7 +26,7 @@ import { highlightLastMove } from '../chess/handleMoves'
 const checkmateSound = new window.Audio('/sounds/victoryBell.mp3')
 const pieceMoveSound = new window.Audio('/sounds/pieceMove.wav')
 
-function OnlineMultiplayer ({ socket, username }) {
+function OnlineMultiplayer ({ socket, username, sound }) {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -61,7 +61,7 @@ function OnlineMultiplayer ({ socket, username }) {
     move => {
       setGameOver(true)
       setOverModalOpen(true)
-      checkmateSound?.play()
+      if(sound) checkmateSound?.play()
       if (move) {
         if (game.current.in_checkmate()) {
           setSubtitleText(
@@ -97,7 +97,7 @@ function OnlineMultiplayer ({ socket, username }) {
 
   // useEffect to highlight last move
   useEffect(() => {
-    if (!game.current?.in_checkmate()) pieceMoveSound?.play()
+    if (!game.current?.in_checkmate() && sound) pieceMoveSound?.play()
     setSquareStyles(highlightLastMove(gameHistory, game))
   }, [gameHistory])
 
