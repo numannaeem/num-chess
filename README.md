@@ -18,7 +18,7 @@ The project is hosted on Heroku and can be viewed [here](https://num-chess.herok
 
 > NumChess? I'm sorry, haven't heard of it before. That's a weird name if I'm being honest. Does it have something to do with numbers?
 >
-> _- Hikaru Nakamura_
+> _- Hikaru Nakamura, probably_
 
 > You should monetize this.  
 >
