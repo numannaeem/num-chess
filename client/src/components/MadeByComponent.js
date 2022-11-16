@@ -47,7 +47,7 @@ function MadeByComponent () {
               }
             }}
             color='inherit'
-            href='https://www.github.com/numannaeem'
+            href='https://numxn.me'
             rel='noreferrer'
           >
             Numan Naeem
