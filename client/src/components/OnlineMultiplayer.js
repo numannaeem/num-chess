@@ -78,7 +78,7 @@ function OnlineMultiplayer ({ socket, username, sound }) {
         return 'draw'
       }
     },
-    [username]
+    [username, sound]
   )
 
   // check if location.state present useEffect
@@ -99,7 +99,7 @@ function OnlineMultiplayer ({ socket, username, sound }) {
   useEffect(() => {
     if (!game.current?.in_checkmate() && sound) pieceMoveSound?.play()
     setSquareStyles(highlightLastMove(gameHistory, game))
-  }, [gameHistory])
+  }, [gameHistory, sound])
 
   // main socket useEffect
   useEffect(() => {
@@ -250,7 +250,7 @@ function OnlineMultiplayer ({ socket, username, sound }) {
         white.username === username ? black.username : white.username
       )
     }
-  }, [yourTimer, oppTimer, socket, username, gameOver])
+  }, [yourTimer, oppTimer, socket, username, gameOver, black.username, white.username])
 
   const onDrop = ({ sourceSquare, targetSquare }) => {
     let gameWinner = null

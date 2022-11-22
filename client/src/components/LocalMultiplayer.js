@@ -45,7 +45,7 @@ function LocalMultiplayer ({sound}) {
   useEffect(() => {
     if (!game.current?.in_checkmate() && sound) pieceMoveSound?.play()
     setSquareStyles(highlightLastMove(gameHistory, game))
-  }, [gameHistory])
+  }, [gameHistory, sound])
 
   const finishGame = useCallback(move => {
     setGameOver(true)
@@ -61,7 +61,7 @@ function LocalMultiplayer ({sound}) {
       setGameWinner('draw')
       setSubtitleText('Draw by insufficient material/threefold repetition')
     }
-  }, [])
+  }, [sound])
 
   useEffect(() => {
     if (!game.current) {
