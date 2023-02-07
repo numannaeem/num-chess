@@ -1,9 +1,5 @@
 # ♟️NumChess - Yet another chess website!
 
-
-
-The project is hosted on Heroku and can be viewed [here](https://num-chess.herokuapp.com).
-
 ## Features
 
 - **Matchmaking!** Click on 'Find game' and get matched up against a random opponent.
